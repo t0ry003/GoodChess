@@ -21,6 +21,9 @@ class GameState():
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["wP", "wP", "wP", "wP", "wP", "wP", "wP", "wP"],
             ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]]
+        # dictionar pentru metode simplificate (mai simplu)
+        self.moveFunctions = {'P': self.getPawnMoves, 'R': self.getRookMoves, 'N': self.getKnightMoves,
+                              'B': self.getBishopMoves, 'Q': self.getQueenMoves, 'K': self.getKingMoves}
 
         self.whiteToMove = True
         self.moveLog = []
@@ -48,25 +51,59 @@ class GameState():
 
     # miscari valide FARA mat-uri
     def getAllPossibleMoves(self):
-        moves = [Move((6, 4), (4, 4), self.board)] # (6, 4)(4, 4) EXEMPLU DE MUTARE LEGALA
+        moves = []
         for r in range(len(self.board)):  # numarul de randuri
             for c in range(len(self.board[r])):  # numarul de coloane
                 turn = self.board[r][c][0]
-                if (turn == 'w' and self.whiteToMove) and (turn == 'b' and not self.whiteToMove):
+                if (turn == 'w' and self.whiteToMove) or (turn == 'b' and not self.whiteToMove):
                     piece = self.board[r][c][1]
-                    # PION
-                    if piece == 'p':
-                        self.getPawnMove(r, c, moves)
-                    elif piece == 'R':
-                        self.getRookMoves(r, c, moves)
+                    # metoda simplificate pe dictionar
+                    self.moveFunctions[piece](r, c, moves)
         return moves
 
     # mutarile pionilor (PAWN)
     def getPawnMoves(self, r, c, moves):
-        pass
+        if self.whiteToMove:
+            if self.board[r - 1][c] == "--":  # mutare 1 in fata
+                moves.append(Move((r, c), (r - 1, c), self.board))
+                if r == 6 and self.board[r - 2][c] == "--":  # mutare 2 in fata
+                    moves.append(Move((r, c), (r - 2, c), self.board))
+            if c - 1 >= 0:  # eliminare stanga
+                if self.board[r - 1][c - 1][0] == 'b':
+                    moves.append(Move((r, c), (r - 1, c - 1), self.board))
+            if c + 1 <= 7:  # eliminare la dreapta
+                if self.board[r - 1][c + 1][0] == 'b':
+                    moves.append(Move((r, c), (r - 1, c + 1), self.board))
+        else:
+            if self.board[r + 1][c] == "--":  # mutare 1 in fata
+                moves.append(Move((r, c), (r + 1, c), self.board))
+                if r == 1 and self.board[r + 2][c] == "--":  # mutare 2 in fata
+                    moves.append(Move((r, c), (r + 2, c), self.board))
+            if c - 1 >= 0:  # eliminare stanga
+                if self.board[r + 1][c - 1][0] == 'w':
+                    moves.append(Move((r, c), (r + 1, c - 1), self.board))
+            if c + 1 <= 7:  # eliminare la dreapta
+                if self.board[r + 1][c + 1][0] == 'w':
+                    moves.append(Move((r, c), (r + 1, c + 1), self.board))
 
     # mutarile turelor (ROOK)
     def getRookMoves(self, r, c, moves):
+        pass
+
+    # mutarile cailor (KNIGHT)
+    def getKnightMoves(self, r, c, moves):
+        pass
+
+    # mutarile nebunilor (BISHOP)
+    def getBishopMoves(self, r, c, moves):
+        pass
+
+    # mutarile reginelor (QUEEN)
+    def getQueenMoves(self, r, c, moves):
+        pass
+
+    # mutarile regilor (KING)
+    def getKingMoves(self, r, c, moves):
         pass
 
 
@@ -96,7 +133,6 @@ class Move():
             Interfata legala este cea cu Ranks and Files pentru care exista dictionar.
         """
         self.moveID = self.startRow * 1000 + self.startCol * 100 + self.endRow * 10 + self.endCol
-        print(f"Mutare ID: {self.moveID}")
 
     # skip rule
     def __eq__(self, other):

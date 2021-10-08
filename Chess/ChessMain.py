@@ -31,7 +31,7 @@ def main():
     screen = p.display.set_mode((WIDTH, HEIGHT))
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
-    gs = ChessEngine.GameState() # gs = game state (statusul jocului in fiecare moemnt)
+    gs = ChessEngine.GameState()  # gs = game state (statusul jocului in fiecare moemnt)
     loadImages()  # importam imaginile o singura data
     validMoves = gs.getValidMoves()
     moveMade = False  # semafor
@@ -87,7 +87,7 @@ def drawGameState(screen, gs):
 
 # functia care afiseaza tabla de sah (drawBoard())
 def drawBoard(screen):
-    colors = [p.Color("white"), p.Color("grey")]
+    colors = [p.Color(232, 232, 232), p.Color(158, 33, 33)]
     for r in range(DIMENSION):
         for c in range(DIMENSION):
             color = colors[((r + c) % 2)]
