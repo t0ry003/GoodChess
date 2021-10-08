@@ -31,9 +31,10 @@ def main():
     screen = p.display.set_mode((WIDTH, HEIGHT))
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
-    gs = ChessEngine.GameState()
-    # importam imaginile o singura data
-    loadImages()
+    gs = ChessEngine.GameState() # gs = game state (statusul jocului in fiecare moemnt)
+    loadImages()  # importam imaginile o singura data
+    validMoves = gs.getValidMoves()
+    moveMade = False  # semafor
     running = True
     sqSelected = ()  # nu este selectat nimic ((row, col))
     playerClicks = []  # memoria click-urilor(mutarilor). Ex: [(6,4), (4,4)]
@@ -41,6 +42,8 @@ def main():
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
+
+            # MOUSE BINDS
             elif e.type == p.MOUSEBUTTONDOWN:
                 location = p.mouse.get_pos()  # pozitia (x,y)
                 col = location[0] // SQ_SIZE
@@ -56,10 +59,21 @@ def main():
                     move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
                     # DEBUG PRINT
                     print("Mutare: " + move.getChassNotation())
-                    gs.makeMove(move)
+                    if move in validMoves:
+                        gs.makeMove(move)
+                        moveMade = True
                     sqSelected = ()  # reset
                     playerClicks = []  # reset
 
+            # KEY BINDS
+            elif e.type == p.KEYDOWN:
+                if e.key == p.K_z:
+                    gs.undoMove()
+                    moveMade = True
+
+        if moveMade:
+            validMoves = gs.getValidMoves()
+            moveMade = False
         drawGameState(screen, gs)
         clock.tick(MAX_FPS)
         p.display.flip()
