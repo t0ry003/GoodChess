@@ -133,6 +133,7 @@ class Move():
             Interfata legala este cea cu Ranks and Files pentru care exista dictionar.
         """
         self.moveID = self.startRow * 1000 + self.startCol * 100 + self.endRow * 10 + self.endCol
+        print(f'MOVEID = {self.moveID}')
 
     # skip rule
     def __eq__(self, other):
