@@ -16,6 +16,8 @@ SQ_SIZE = HEIGHT // DIMENSION
 MAX_FPS = 15
 # pentru a adauga seturi de saj (skins)
 IMAGES = {}
+# window icon
+WINDOW_ICON = p.image.load('images/icon.png')
 
 
 # incarcarea imaginilor intr-o lista IMAGES["initialaPiesa"]
@@ -28,6 +30,8 @@ def loadImages():
 # functia principala(main)
 def main():
     p.init()
+    p.display.set_icon(WINDOW_ICON)
+    p.display.set_caption('Good Chess')
     screen = p.display.set_mode((WIDTH, HEIGHT))
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
@@ -90,7 +94,7 @@ def drawGameState(screen, gs):
 
 # functia care afiseaza tabla de sah (drawBoard())
 def drawBoard(screen):
-    colors = [p.Color(232, 232, 232), p.Color(158, 33, 33)]
+    colors = [p.Color(240, 217, 181), p.Color(181, 136, 99)]
     for r in range(DIMENSION):
         for c in range(DIMENSION):
             color = colors[((r + c) % 2)]
