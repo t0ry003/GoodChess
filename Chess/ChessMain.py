@@ -3,7 +3,7 @@ Main Script
 """
 
 import pygame as p
-from Chess import ChessEngine
+import ChessEngine
 
 # pentru o rezolutie optima am ales 512x512 (imaginile pieselor nu au o calitate foarte bune
 WIDTH = 512
