@@ -19,7 +19,7 @@ class GameState():
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["--", "--", "--", "--", "--", "--", "--", "--"],
-            ["wP", "wP", "wP", "wP", "wP", "wP", "wP", "--"],
+            ["wP", "wP", "wP", "wP", "wP", "wP", "wP", "wP"],
             ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]]
         # dictionar pentru metode simplificate (mai simplu)
         self.moveFunctions = {'P': self.getPawnMoves, 'R': self.getRookMoves, 'N': self.getKnightMoves,
@@ -109,19 +109,53 @@ class GameState():
 
     # mutarile cailor (KNIGHT)
     def getKnightMoves(self, r, c, moves):
-        pass
+        knightMoves = ((-2, -1), (-2, 1), (-1, -2), (-1, 2), (1, -2), (1, 2), (2, -1), (2, 1))
+        allyColor = 'w' if self.whiteToMove else 'b'
+        for m in knightMoves:
+            endRow = r + m[0]
+            endCol = c + m[1]
+            if 0 <= endRow < 8 and 0 <= endCol < 8:
+                endPiece = self.board[endRow][endCol]
+                if endPiece[0] != allyColor:  # nu este piesa din echipa
+                    moves.append(Move((r, c), (endRow, endCol), self.board))
 
     # mutarile nebunilor (BISHOP)
     def getBishopMoves(self, r, c, moves):
-        pass
+        directie = ((-1, -1), (-1, 1), (1, -1), (1, 1))
+        culoareInamic = 'b' if self.whiteToMove else 'w'
+        for d in directie:
+            for i in range(1, 8):
+                endRow = r + d[0] * i
+                endCol = c + d[1] * i
+                if 0 <= endRow < 8 and 0 <= endCol < 8:
+                    endPiece = self.board[endRow][endCol]
+                    if endPiece == '--':
+                        moves.append(Move((r, c), (endRow, endCol), self.board))
+                    elif endPiece[0] == culoareInamic:
+                        moves.append(Move((r, c), (endRow, endCol), self.board))
+                        break
+                    else:  # piesa din echipa
+                        break
+                else:  # nu e pe tabla
+                    break
 
     # mutarile reginelor (QUEEN)
     def getQueenMoves(self, r, c, moves):
-        pass
+        # mutarile reginei sunt mutarile turelor (ROOK) si mutarile nebunilor (BISHOP)
+        self.getRookMoves(r, c, moves)
+        self.getBishopMoves(r, c, moves)
 
     # mutarile regilor (KING)
     def getKingMoves(self, r, c, moves):
-        pass
+        kingMoves = ((-1, -1), (-1, 0), (-1, 1), (0, -1), (0, 1), (1, -1), (1, 0), (1, 1))
+        allyColor = 'w' if self.whiteToMove else 'b'
+        for i in range(8):
+            endRow = r + kingMoves[i][0]
+            endCol = c + kingMoves[i][1]
+            if 0 <= endRow < 8 and 0 <= endCol < 8:
+                endPiece = self.board[endRow][endCol]
+                if endPiece[0] != allyColor:  # nu este piesa din echipa
+                    moves.append(Move((r, c), (endRow, endCol), self.board))
 
 
 class Move():
