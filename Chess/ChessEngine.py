@@ -27,6 +27,10 @@ class GameState():
 
         self.whiteToMove = True
         self.moveLog = []
+        self.whiteKingLocation = (7, 4)  # locatia de start "wK"
+        self.blackKingLocation = (0, 4)  # locatia de start "bK"
+        self.checkMate = False
+        self.staleMate = False
 
     # preia mutarea si o executa
     def makeMove(self, move):
@@ -34,6 +38,11 @@ class GameState():
         self.board[move.endRow][move.endCol] = move.pieceMoved
         self.moveLog.append(move)
         self.whiteToMove = not self.whiteToMove  # pastreaza randul jucatorilor
+        # update king's pos
+        if move.pieceMoved == 'wK':
+            self.whiteKingLocation = (move.endRow, move.endCol)
+        if move.pieceMoved == 'bK':
+            self.blackKingLocation = (move.endRow, move.endCol)
 
     # rectifica mutarea
     def undoMove(self):
@@ -44,12 +53,53 @@ class GameState():
             self.board[move.endRow][move.endCol] = move.pieceCaptured
             # paseaza tura celuilalt jucator
             self.whiteToMove = not self.whiteToMove
+            # update king's pos
+            if move.pieceMoved == 'wK':
+                self.whiteKingLocation = (move.startRow, move.startCol)
+            if move.pieceMoved == 'bK':
+                self.blackKingLocation = (move.startRow, move.startCol)
 
     # miscari valide CU mat-uri
     def getValidMoves(self):
-        return self.getAllPossibleMoves()  # ! NU LUAM IN CALCUL MAT-URILE MOMENTAN
+        # 1) generam toate mutarile posibile
+        moves = self.getAllPossibleMoves()
+        # 2) pentru fiecare mutare, face mutarea
+        for i in range(len(moves) - 1, -1, -1):  # parcurgem invers
+            self.makeMove(moves[i])
+            # 3) generarea mutarilor oponentului
+            # 4) pentru fiecare mutare a oponentului, verifica daca iti poat ataca regele
+            self.whiteToMove = not self.whiteToMove  # schimbam jucatorii deoarece functia makeMove() a schimbat deja jucatorii
+            if self.inCheck():
+                moves.remove(moves[i])  # 5) daca ataca regele nu este o mutare valida
+            self.whiteToMove = not self.whiteToMove
+            self.undoMove()
+        if len(moves) == 0:
+            if self.inCheck():
+                self.checkMate = True
+            else:
+                self.staleMate = True
+        else:
+            self.checkMate = False
+            self.staleMate = False
+        return moves
 
-    # miscari valide FARA mat-uri
+    # verifica daca jucatorul este in check
+    def inCheck(self):
+        if self.whiteToMove:
+            return self.squareUnderAttack(self.whiteKingLocation[0], self.whiteKingLocation[1])
+        else:
+            return self.squareUnderAttack(self.blackKingLocation[0], self.blackKingLocation[1])
+
+    # verifica daca inamicul poate ataca patratul (r, c)
+    def squareUnderAttack(self, r, c):
+        self.whiteToMove = not self.whiteToMove  # schimba jucatorii pentru a afla mutarile
+        oppMoves = self.getAllPossibleMoves()
+        self.whiteToMove = not self.whiteToMove  # schimba inapoi jucatorii
+        for move in oppMoves:
+            if move.endRow == r and move.endCol == c:  # patratul este atacat
+                return True
+        return False
+
     def getAllPossibleMoves(self):
         moves = []
         for r in range(len(self.board)):  # numarul de randuri
