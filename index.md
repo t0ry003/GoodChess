@@ -1,6 +1,6 @@
 # Good Chess
 
-<center><img src="https://raw.githubusercontent.com/t0ry003/ChessEngine/master/Documentation/icon-big.png" alt="GoodChess" width="85"/> </br> <b>A simple chess game created in Python</b></center>
+<center><img src="https://raw.githubusercontent.com/t0ry003/ChessEngine/master/Documentation/icon-big.png" alt="GoodChess" width="85"/><br><b>A simple chess game created in Python</b></center>
 
 ------------
 #### Active Features:
