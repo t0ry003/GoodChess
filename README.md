@@ -16,10 +16,10 @@
 ------------
 
 #### How the game looks like?
-<img src="https://raw.githubusercontent.com/t0ry003/ChessEngine/master/Documentation/board.png" alt="BoardScreenshot" width="350"/>
+<img src="https://github.com/t0ry003/ChessEngine/blob/master/Documentation/board.png" alt="BoardScreenshot" width="350"/>
 
 ------------
 
 #### How the board is represented in Python as a matrix?
-<img src="https://raw.githubusercontent.com/t0ry003/ChessEngine/master/Documentation/board-numbering.png" alt="BoardScreenshot" width="200"/>
+<img src="https://github.com/t0ry003/ChessEngine/blob/master/Documentation/board-numbering.png" alt="BoardNumbering" width="200"/>
 
