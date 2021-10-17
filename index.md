@@ -23,4 +23,3 @@
 #### How the board is represented in Python as a matrix?
 <img src="https://github.com/t0ry003/ChessEngine/blob/master/Documentation/board-numbering.png" alt="BoardNumbering" width="200"/>
 
-
