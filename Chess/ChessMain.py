@@ -5,9 +5,8 @@ Main Script
 import pygame as p
 import ChessEngine
 
-# pentru o rezolutie optima am ales 512x512 (imaginile pieselor nu au o calitate foarte bune
-WIDTH = 512
-HEIGHT = 512
+WIDTH = 785
+HEIGHT = 785
 # tabla este de tipul 8x8
 DIMENSION = 8
 # marimea unui patrat
@@ -20,7 +19,7 @@ IMAGES = {}
 WINDOW_ICON = p.image.load('images/icon.png')
 
 
-# incarcarea imaginilor intr-o lista IMAGES["initialaPiesa"]
+# incarcarea imaginilor intr-o lista IMAGES["culoarePiesa"]
 def loadImages():
     pieces = ["wP", "wR", "wN", "wB", "wQ", "wK", "bP", "bR", "bN", "bB", "bQ", "bK"]
     for piece in pieces:
