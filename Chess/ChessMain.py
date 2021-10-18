@@ -61,7 +61,7 @@ def main():
                 if len(playerClicks) == 2:  # dupa al doilea click
                     move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
                     # DEBUG PRINT
-                    print("Mutare: " + move.getChassNotation())
+                    # print("Mutare: " + move.getChassNotation())
                     if move in validMoves:
                         gs.makeMove(move)
                         moveMade = True
@@ -80,20 +80,39 @@ def main():
         if moveMade:
             validMoves = gs.getValidMoves()
             moveMade = False
-        drawGameState(screen, gs)
+        drawGameState(screen, gs, validMoves, sqSelected)
         clock.tick(MAX_FPS)
         p.display.flip()
 
 
+# functia care arata mutarile pe tabla
+def highlightSquares(screen, gs, validMoves, sqSelected):
+    if sqSelected != ():
+        r, c = sqSelected
+        if gs.board[r][c][0] == ('w' if gs.whiteToMove else 'b'):
+            s = p.Surface((SQ_SIZE, SQ_SIZE))
+            s.set_alpha(100)
+            s.fill(p.Color('blue'))
+            screen.blit(s, (SQ_SIZE * c, SQ_SIZE * r))
+            s.fill(p.Color('yellow'))
+            for move in validMoves:
+                if move.startRow == r and move.startCol == c:
+                    screen.blit(s, (move.endCol * SQ_SIZE, move.endRow * SQ_SIZE))
+
+
 # pentru a adauga seturi de sah (skins)
-def drawGameState(screen, gs):
+def drawGameState(screen, gs, validMoves, sqSelected):
     drawBoard(screen)
+    highlightSquares(screen, gs, validMoves, sqSelected)
     drawPieces(screen, gs.board)
 
 
 # functia care afiseaza tabla de sah (drawBoard())
 def drawBoard(screen):
+    # BOARD COLORS
     colors = [p.Color(240, 217, 181), p.Color(181, 136, 99)]
+    # END BOARD COLORS
+
     for r in range(DIMENSION):
         for c in range(DIMENSION):
             color = colors[((r + c) % 2)]
