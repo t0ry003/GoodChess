@@ -17,8 +17,6 @@ MAX_FPS = 15
 IMAGES = {}
 # window icon
 WINDOW_ICON = p.image.load('images/icon.png')
-# adaugare skinuri
-skins = []
 
 
 # incarcarea imaginilor intr-o lista IMAGES["culoarePiesa"]
