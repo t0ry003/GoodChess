@@ -7,11 +7,12 @@
 - Only valid chess moves are available;
 - CheckMate is present;
 - Right now it's playable only in two phisical players;
+- Available moves highlights
 
 #### Future Updates:
-1. Available moves highlights
-2. Variable skins for board and pieces
-3. An artifical inteligence player (*A.I.*)
+1. Move animations
+2. Interchangeable board and pieces skins
+2. An artifical inteligence player (*A.I.*)
 
 ------------
 
