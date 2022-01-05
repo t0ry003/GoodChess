@@ -4,14 +4,15 @@
 
 ------------
 #### Active Features:
-- Only valid chess moves are available;
 - CheckMate is present;
+- Stalemate is present;
 - Right now it's playable only in two phisical players;
-- Available moves highlights
+- Available moves highlights;
+- Piece move animation;
+- Only valid chess moves are available;
 
 #### Future Updates:
-1. Move animations
-2. Interchangeable board and pieces skins
+1. Interchangeable board and pieces skins
 2. An artifical inteligence player (*A.I.*)
 
 ------------
@@ -22,5 +23,5 @@
 ------------
 
 #### How the board is represented in Python as a matrix?
-<img src="https://github.com/t0ry003/ChessEngine/blob/master/Documentation/board-numbering.png" alt="BoardNumbering" width="200"/>
+<img src="https://github.com/t0ry003/ChessEngine/blob/master/Documentation/board-numbering.png" alt="BoardNumbering" width="350"/>
 
