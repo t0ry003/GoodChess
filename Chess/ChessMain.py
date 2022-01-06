@@ -5,12 +5,13 @@ Main Script
 import pygame as p
 import ChessEngine
 
-WIDTH = 784
-HEIGHT = 784
+BOARD_WIDTH = BOARD_HEIGHT = 784
+MOVE_LOG_PANEL_WIDTH = 250
+MOVE_LOG_PANEL_HEIGHT = BOARD_HEIGHT
 # tabla este de tipul 8x8
 DIMENSION = 8
 # marimea unui patrat
-SQ_SIZE = HEIGHT // DIMENSION
+SQ_SIZE = BOARD_HEIGHT // DIMENSION
 # numarul de fps-uri la care ruleaza jocul
 MAX_FPS = 15
 # pentru a adauga seturi de saj (skins)
@@ -33,9 +34,10 @@ def main():
     p.init()
     p.display.set_icon(WINDOW_ICON)
     p.display.set_caption('Good Chess')
-    screen = p.display.set_mode((WIDTH, HEIGHT))
+    screen = p.display.set_mode((BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
+    moveLogFont = p.font.SysFont("Arial", 25, False, False)
     gs = ChessEngine.GameState()  # gs = game state (statusul jocului in fiecare moemnt)
     loadImages()  # importam imaginile o singura data
     validMoves = gs.getValidMoves()
@@ -56,7 +58,7 @@ def main():
                     col = location[0] // SQ_SIZE
                     row = location[1] // SQ_SIZE
                     # pentru a nu muta in acelasi loc
-                    if sqSelected == (row, col):
+                    if sqSelected == (row, col) or col >= 8:
                         sqSelected = ()  # reset
                         playerClicks = []  # reset
                     else:
@@ -65,7 +67,7 @@ def main():
                     if len(playerClicks) == 2:  # dupa al doilea click
                         move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
                         # DEBUG PRINT
-                        # print("Mutare: " + move.getChassNotation())
+                        # print(move.getChessNotation())
                         if move in validMoves:
                             gs.makeMove(move)
                             moveMade = True
@@ -99,7 +101,7 @@ def main():
             moveMade = False
             animate = False
 
-        drawGameState(screen, gs, validMoves, sqSelected)
+        drawGameState(screen, gs, validMoves, sqSelected, moveLogFont)
 
         if gs.checkMate:
             gameOver = True
@@ -131,10 +133,11 @@ def highlightSquares(screen, gs, validMoves, sqSelected):
 
 
 # pentru a adauga seturi de sah (skins)
-def drawGameState(screen, gs, validMoves, sqSelected):
+def drawGameState(screen, gs, validMoves, sqSelected, moveLogFont):
     drawBoard(screen)
     highlightSquares(screen, gs, validMoves, sqSelected)
     drawPieces(screen, gs.board)
+    drawMoveLog(screen, gs, moveLogFont)
 
 
 # functia care afiseaza tabla de sah (drawBoard())
@@ -158,6 +161,23 @@ def drawPieces(screen, board):
             # verificam daca nu este loc gol (notat in lista ca "--")
             if piece != "--":
                 screen.blit(IMAGES[piece], p.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE))
+
+
+# functie pentru log-ul de mutari
+def drawMoveLog(screen, gs, font):
+    moveLogRect = p.Rect(BOARD_WIDTH, 0, MOVE_LOG_PANEL_WIDTH, MOVE_LOG_PANEL_HEIGHT)
+    p.draw.rect(screen, p.Color('black'), moveLogRect)
+    moveLog = gs.moveLog
+    moveTexts = moveLog
+    padding = 5
+    textY = padding
+    lineSpacing = 2
+    for i in range(len(moveTexts)):
+        text = moveTexts[i].getChessNotation()
+        textObject = font.render(text, True, p.Color('white'))
+        textLocation = moveLogRect.move(padding, textY)
+        screen.blit(textObject, textLocation)
+        textY += textObject.get_height() + lineSpacing
 
 
 # functia de animare a mutarii
@@ -186,8 +206,8 @@ def animateMove(move, screen, board, clock):
 def drawText(screen, text):
     font = p.font.SysFont("Helvitca", 45, True, False)
     textObject = font.render(text, 0, p.Color('Gray'))
-    textLocation = p.Rect(0, 0, WIDTH, HEIGHT).move(WIDTH / 2 - textObject.get_width() / 2,
-                                                    HEIGHT / 2 - textObject.get_height() / 2)
+    textLocation = p.Rect(0, 0, BOARD_WIDTH, BOARD_HEIGHT).move(BOARD_WIDTH / 2 - textObject.get_width() / 2,
+                                                                BOARD_HEIGHT / 2 - textObject.get_height() / 2)
     screen.blit(textObject, textLocation)
     textObject = font.render(text, 0, p.Color('Black'))
     screen.blit(textObject, textLocation.move(2, 2))
