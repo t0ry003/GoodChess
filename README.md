@@ -6,6 +6,7 @@
 #### Active Features:
 - CheckMate is present;
 - Stalemate is present;
+- Move log;
 - Right now it's playable only in two phisical players;
 - Available moves highlights;
 - Piece move animation;
