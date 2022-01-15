@@ -125,7 +125,7 @@ class GameState():
                 if self.board[r - 1][c + 1][0] == 'b':
                     moves.append(Move((r, c), (r - 1, c + 1), self.board))
         else:
-            if self.board[r + 1][c] == "--":  # mutare 1 in fata
+            if self.board[r + 1][c] == "--" and self.board[r + 1][c] != None:  # mutare 1 in fata
                 moves.append(Move((r, c), (r + 1, c), self.board))
                 if r == 1 and self.board[r + 2][c] == "--":  # mutare 2 in fata
                     moves.append(Move((r, c), (r + 2, c), self.board))
