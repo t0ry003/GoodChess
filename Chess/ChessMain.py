@@ -3,33 +3,26 @@ Main Script
 """
 
 import pygame as p
+
 import ChessEngine
 
 BOARD_WIDTH = BOARD_HEIGHT = 784
 MOVE_LOG_PANEL_WIDTH = 250
 MOVE_LOG_PANEL_HEIGHT = BOARD_HEIGHT
-# tabla este de tipul 8x8
 DIMENSION = 8
-# marimea unui patrat
 SQ_SIZE = BOARD_HEIGHT // DIMENSION
-# numarul de fps-uri la care ruleaza jocul
 MAX_FPS = 15
-# pentru a adauga seturi de saj (skins)
 IMAGES = {}
-# window icon
 WINDOW_ICON = p.image.load('images/icon.png')
-# animate
 animate = True
 
 
-# incarcarea imaginilor intr-o lista IMAGES["culoarePiesa"]
 def loadImages():
     pieces = ["wP", "wR", "wN", "wB", "wQ", "wK", "bP", "bR", "bN", "bB", "bQ", "bK"]
     for piece in pieces:
         IMAGES[piece] = p.transform.scale(p.image.load("images/" + piece + ".png"), (SQ_SIZE, SQ_SIZE))
 
 
-# functia principala(main)
 def main():
     p.init()
     p.display.set_icon(WINDOW_ICON)
@@ -38,54 +31,49 @@ def main():
     clock = p.time.Clock()
     screen.fill(p.Color("white"))
     moveLogFont = p.font.SysFont("Arial", 25, False, False)
-    gs = ChessEngine.GameState()  # gs = game state (statusul jocului in fiecare moemnt)
-    loadImages()  # importam imaginile o singura data
+    gs = ChessEngine.GameState()
+    loadImages()
     validMoves = gs.getValidMoves()
-    moveMade = False  # semafor
+    moveMade = False
     running = True
-    sqSelected = ()  # nu este selectat nimic ((row, col))
-    playerClicks = []  # memoria click-urilor(mutarilor). Ex: [(6,4), (4,4)]
+    sqSelected = ()
+    playerClicks = []
     gameOver = False
     while running:
         for e in p.event.get():
             if e.type == p.QUIT:
                 running = False
 
-            # MOUSE BINDS
             elif e.type == p.MOUSEBUTTONDOWN:
                 if not gameOver:
-                    location = p.mouse.get_pos()  # pozitia (x,y)
+                    location = p.mouse.get_pos()
                     col = location[0] // SQ_SIZE
                     row = location[1] // SQ_SIZE
-                    # pentru a nu muta in acelasi loc
                     if sqSelected == (row, col) or col >= 8:
-                        sqSelected = ()  # reset
-                        playerClicks = []  # reset
+                        sqSelected = ()
+                        playerClicks = []
                     else:
                         sqSelected = (row, col)
-                        playerClicks.append(sqSelected)  # pentru primul si al doilea click
-                    if len(playerClicks) == 2:  # dupa al doilea click
+                        playerClicks.append(sqSelected)
+                    if len(playerClicks) == 2:
                         move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
-                        # DEBUG PRINT
-                        # print(move.getChessNotation())
                         if move in validMoves:
                             gs.makeMove(move)
                             moveMade = True
                             animate = True
-                            sqSelected = ()  # reset
+                            sqSelected = ()
                             playerClicks = []
                         else:
                             playerClicks = [sqSelected]
 
 
-            # KEY BINDS
             elif e.type == p.KEYDOWN:
                 if e.key == p.K_z:
                     gs.undoMove()
                     moveMade = True
                     animate = False
                     gameOver = False
-                if e.key == p.K_r:  # reset the board
+                if e.key == p.K_r:
                     gs = ChessEngine.GameState()
                     validMoves = gs.getValidMoves()
                     sqSelected = ()
@@ -117,7 +105,6 @@ def main():
         p.display.flip()
 
 
-# functia care arata mutarile pe tabla
 def highlightSquares(screen, gs, validMoves, sqSelected):
     if sqSelected != ():
         r, c = sqSelected
@@ -132,7 +119,6 @@ def highlightSquares(screen, gs, validMoves, sqSelected):
                     screen.blit(s, (move.endCol * SQ_SIZE, move.endRow * SQ_SIZE))
 
 
-# pentru a adauga seturi de sah (skins)
 def drawGameState(screen, gs, validMoves, sqSelected, moveLogFont):
     drawBoard(screen)
     highlightSquares(screen, gs, validMoves, sqSelected)
@@ -140,12 +126,9 @@ def drawGameState(screen, gs, validMoves, sqSelected, moveLogFont):
     drawMoveLog(screen, gs, moveLogFont)
 
 
-# functia care afiseaza tabla de sah (drawBoard())
 def drawBoard(screen):
-    # BOARD COLORS
     global colors
     colors = [p.Color(240, 217, 181), p.Color(181, 136, 99)]
-    # END BOARD COLORS
 
     for r in range(DIMENSION):
         for c in range(DIMENSION):
@@ -153,17 +136,14 @@ def drawBoard(screen):
             p.draw.rect(screen, color, p.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
 
-# functia care afiseaza piesele in forma tablei de sah (drawPieces())
 def drawPieces(screen, board):
     for r in range(DIMENSION):
         for c in range(DIMENSION):
             piece = board[r][c]
-            # verificam daca nu este loc gol (notat in lista ca "--")
             if piece != "--":
                 screen.blit(IMAGES[piece], p.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
 
-# functie pentru log-ul de mutari
 def drawMoveLog(screen, gs, font):
     moveLogRect = p.Rect(BOARD_WIDTH, 0, MOVE_LOG_PANEL_WIDTH, MOVE_LOG_PANEL_HEIGHT)
     p.draw.rect(screen, p.Color('black'), moveLogRect)
@@ -180,12 +160,11 @@ def drawMoveLog(screen, gs, font):
         textY += textObject.get_height() + lineSpacing
 
 
-# functia de animare a mutarii
 def animateMove(move, screen, board, clock):
     global colors
     dR = move.endRow - move.startRow
     dC = move.endCol - move.startCol
-    framesPerSquare = 10  # pentru un patrat
+    framesPerSquare = 10
     frameCount = (abs(dR) + abs(dC)) * framesPerSquare
     for frame in range(frameCount + 1):
         r, c = (move.startRow + dR * frame / frameCount, move.startCol + dC * frame / frameCount)
@@ -194,13 +173,11 @@ def animateMove(move, screen, board, clock):
         color = colors[(move.endRow + move.endCol) % 2]
         endSquare = p.Rect(move.endCol * SQ_SIZE, move.endRow * SQ_SIZE, SQ_SIZE, SQ_SIZE)
         p.draw.rect(screen, color, endSquare)
-        # draw capture piece
         if move.pieceCaptured != '--':
             screen.blit(IMAGES[move.pieceCaptured], endSquare)
-        # draw moving piece
         screen.blit(IMAGES[move.pieceMoved], p.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE))
         p.display.flip()
-        clock.tick(60)  # frame count for animation
+        clock.tick(60)
 
 
 def drawText(screen, text):
@@ -213,6 +190,5 @@ def drawText(screen, text):
     screen.blit(textObject, textLocation.move(2, 2))
 
 
-# apelarea functiei principale
 if __name__ == "__main__":
     main()
