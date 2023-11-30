@@ -5,7 +5,7 @@ Main Script
 import json
 import pygame as p
 import tkinter as t
-from tkinter import ttk
+from tkinter import ttk, colorchooser
 from datetime import datetime
 import ChessEngine
 
@@ -26,6 +26,7 @@ SCROLL_SPEED = 1
 global SKIN, THEME, COLORS, MOVES_LOG
 SKIN = 'Default'
 THEME = 'Default'
+COLORS = 0
 MOVES_LOG = []
 
 
@@ -70,6 +71,49 @@ def choose_skin_theme():
     theme_combo = ttk.Combobox(root, values=["Default", "Dark", "Green"])  # Add more theme options if needed
     theme_combo.set(THEME)
 
+    def load_chess_data(file_path):
+        with open(file_path, 'r') as file:
+            chess_data = json.load(file)
+        return chess_data
+
+    def show_chess_data(chess_data):
+        top = t.Toplevel()
+        top.title("Chess Match Data Viewer")
+        top.iconbitmap("images/game/icon.ico")
+
+        window_width = 400
+        window_height = 400
+        screen_width = root.winfo_screenwidth()
+        screen_height = root.winfo_screenheight()
+        x_position = (screen_width - window_width) // 2
+        y_position = (screen_height - window_height) // 2
+        top.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
+
+        stylen = ttk.Style()
+        stylen.theme_use('clam')
+        stylen.configure('.', background='#2E2E2E', foreground='white')
+        stylen.configure('Treeview', background='#2E2E2E', fieldbackground='#2E2E2E',
+                         foreground='white')
+
+        tree = ttk.Treeview(top, columns=('Timestamp', 'Move'), show='headings', style='Treeview')
+        tree.heading('Timestamp', text='Time')
+        tree.heading('Move', text='Move')
+
+        for move in chess_data:
+            tree.insert('', 'end', values=(move['timestamp'], move['move']))
+
+        tree.pack(expand=True, fill='both')
+
+        top.mainloop()
+
+    def show_last_moves():
+        file_path = "moves_log.json"
+        chess_data = load_chess_data(file_path)
+        if chess_data:
+            show_chess_data(chess_data)
+        else:
+            print("Error loading chess data from the file.")
+
     def apply_selection():
         global SKIN, THEME, COLORS
         SKIN = skin_combo.get()
@@ -84,13 +128,15 @@ def choose_skin_theme():
 
         root.destroy()
 
-    apply_button = ttk.Button(root, text="Apply", command=apply_selection)
+    apply_button = ttk.Button(root, text="START", command=apply_selection)
+    show_moves_button = ttk.Button(root, text="Show Last Moves", command=show_last_moves)
 
     skin_label.pack(pady=10)
     skin_combo.pack(pady=10)
     theme_label.pack(pady=10)
     theme_combo.pack(pady=10)
     apply_button.pack(pady=20)
+    show_moves_button.pack(pady=10)
 
     root.configure(background=dark_bg)
     root.mainloop()
@@ -118,6 +164,8 @@ def main():
 
     global SKIN, THEME, COLORS
     choose_skin_theme()
+    if COLORS == 0:
+        quit("Game did not start. Please choose a skin and theme and press START.")
     p.init()
     p.display.set_icon(WINDOW_ICON)
     p.display.set_caption('Good Chess')
@@ -383,6 +431,8 @@ def save_moves_to_json(moves_log):
     """
 
     timestamped_moves = [{'timestamp': str(datetime.now()), 'move': move} for move in moves_log]
+    # show just the date, hour, and minute
+    timestamped_moves = [{'timestamp': move['timestamp'][:16], 'move': move['move']} for move in timestamped_moves]
 
     with open('moves_log.json', 'w') as json_file:
         json.dump(timestamped_moves, json_file)
