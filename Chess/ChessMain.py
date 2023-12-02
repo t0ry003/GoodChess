@@ -7,6 +7,7 @@ import pygame as p
 import tkinter as t
 from tkinter import ttk, colorchooser
 from datetime import datetime
+import webbrowser
 import ChessEngine
 
 # Constants
@@ -45,7 +46,7 @@ def choose_skin_theme():
     root.iconbitmap("images/game/icon.ico")
 
     window_width = 350
-    window_height = 300
+    window_height = 350
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
     x_position = (screen_width - window_width) // 2
@@ -81,19 +82,19 @@ def choose_skin_theme():
         top.title("Chess Match Data Viewer")
         top.iconbitmap("images/game/icon.ico")
 
-        window_width = 400
-        window_height = 400
-        screen_width = root.winfo_screenwidth()
-        screen_height = root.winfo_screenheight()
-        x_position = (screen_width - window_width) // 2
-        y_position = (screen_height - window_height) // 2
-        top.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
+        top_window_width = 400
+        top_window_height = 400
+        top_screen_width = top.winfo_screenwidth()
+        top_screen_height = top.winfo_screenheight()
+        top_x_position = (top_screen_width - top_window_width) // 2
+        top_y_position = (top_screen_height - top_window_height) // 2
+        top.geometry(f"{top_window_width}x{top_window_height}+{top_x_position}+{top_y_position}")
 
-        stylen = ttk.Style()
-        stylen.theme_use('clam')
-        stylen.configure('.', background='#2E2E2E', foreground='white')
-        stylen.configure('Treeview', background='#2E2E2E', fieldbackground='#2E2E2E',
-                         foreground='white')
+        top_style = ttk.Style()
+        top_style.theme_use('clam')
+        top_style.configure('.', background='#2E2E2E', foreground='white')
+        top_style.configure('Treeview', background='#2E2E2E', fieldbackground='#2E2E2E',
+                            foreground='white')
 
         tree = ttk.Treeview(top, columns=('Timestamp', 'Move'), show='headings', style='Treeview')
         tree.heading('Timestamp', text='Time')
@@ -112,7 +113,7 @@ def choose_skin_theme():
         if chess_data:
             show_chess_data(chess_data)
         else:
-            print("Error loading chess data from the file.")
+            print("Error loading chess data from the file or no data to show.")
 
     def apply_selection():
         global SKIN, THEME, COLORS
@@ -128,8 +129,12 @@ def choose_skin_theme():
 
         root.destroy()
 
+    def open_github():
+        webbrowser.open("https://github.com/t0ry003/GoodChess")
+
     apply_button = ttk.Button(root, text="START", command=apply_selection)
     show_moves_button = ttk.Button(root, text="Show Last Moves", command=show_last_moves)
+    github_button = ttk.Button(root, text="\u2B50GitHub", command=open_github)
 
     skin_label.pack(pady=10)
     skin_combo.pack(pady=10)
@@ -137,6 +142,7 @@ def choose_skin_theme():
     theme_combo.pack(pady=10)
     apply_button.pack(pady=20)
     show_moves_button.pack(pady=10)
+    github_button.pack(side=t.LEFT, padx=10, pady=10)
 
     root.configure(background=dark_bg)
     root.mainloop()
