@@ -3,6 +3,7 @@ Main Script
 """
 
 import json
+import sys
 import pygame as p
 import tkinter as t
 from tkinter import ttk, colorchooser
@@ -24,7 +25,6 @@ SCROLL_OFFSET = 0
 SCROLL_SPEED = 1
 
 # Global variables
-global SKIN, THEME, COLORS, MOVES_LOG
 SKIN = 'Default'
 THEME = 'Default'
 COLORS = 0
@@ -108,7 +108,7 @@ def choose_skin_theme():
         top.mainloop()
 
     def show_last_moves():
-        file_path = "moves_log.json"
+        file_path = ".moves_log.json"
         chess_data = load_chess_data(file_path)
         if chess_data:
             show_chess_data(chess_data)
@@ -171,7 +171,7 @@ def main():
     global SKIN, THEME, COLORS
     choose_skin_theme()
     if COLORS == 0:
-        quit("Game did not start. Please choose a skin and theme and press START.")
+        sys.exit("Game did not start. Please choose a skin and theme and press START.")
     p.init()
     p.display.set_icon(WINDOW_ICON)
     p.display.set_caption('Good Chess')
@@ -440,7 +440,7 @@ def save_moves_to_json(moves_log):
     # show just the date, hour, and minute
     timestamped_moves = [{'timestamp': move['timestamp'][:16], 'move': move['move']} for move in timestamped_moves]
 
-    with open('moves_log.json', 'w') as json_file:
+    with open('.moves_log.json', 'w') as json_file:
         json.dump(timestamped_moves, json_file)
 
 
