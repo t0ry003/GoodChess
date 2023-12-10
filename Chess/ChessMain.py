@@ -2,13 +2,18 @@
 Main Script
 """
 
+# Imports
 import json
+import os
 import sys
 import pygame as p
 import tkinter as t
-from tkinter import ttk, colorchooser
-from datetime import datetime
+from tkinter import ttk
+from PIL import ImageTk, Image
 import webbrowser
+import sv_ttk
+from tkmessagebox import *
+import ntkutils
 import ChessEngine
 
 # Constants
@@ -23,6 +28,7 @@ WINDOW_ICON = p.image.load('images/game/icon.png')
 ANIMATE = True
 SCROLL_OFFSET = 0
 SCROLL_SPEED = 1
+FRAMES_PER_SQUARE = 9
 
 # Global variables
 SKIN = 'Default'
@@ -40,75 +46,17 @@ def choose_skin_theme():
         This function uses a Tkinter window to prompt the user for skin and theme preferences and updates global variables accordingly.
     """
 
-    global SKIN, THEME, COLORS
-    root = t.Tk()
-    root.title("Good Chess | Settings")
-    root.iconbitmap("images/game/icon.ico")
-
-    window_width = 350
-    window_height = 350
-    screen_width = root.winfo_screenwidth()
-    screen_height = root.winfo_screenheight()
-    x_position = (screen_width - window_width) // 2
-    y_position = (screen_height - window_height) // 2
-    root.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
-
-    dark_bg = "#1E1E1E"
-    dark_fg = "white"
-    dark_highlight_bg = "#353535"
-
-    style = ttk.Style()
-    style.theme_use("clam")
-
-    style.configure("TLabel", background=dark_bg, foreground=dark_fg)
-    style.configure("TCombobox", fieldbackground=dark_bg, background=dark_highlight_bg, foreground=dark_fg)
-    style.configure("TButton", background=dark_bg, foreground=dark_fg)
-
-    skin_label = ttk.Label(root, text="Choose Skin:")
-    skin_combo = ttk.Combobox(root, values=["Default", "Fantasy", "Minimalist"])
-    skin_combo.set(SKIN)
-
-    theme_label = ttk.Label(root, text="Choose Theme:")
-    theme_combo = ttk.Combobox(root, values=["Default", "Dark", "Green"])  # Add more theme options if needed
-    theme_combo.set(THEME)
-
     def load_chess_data(file_path):
         with open(file_path, 'r') as file:
             chess_data = json.load(file)
         return chess_data
 
-    def show_chess_data(chess_data):
-        top = t.Toplevel()
-        top.title("Chess Match Data Viewer")
-        top.iconbitmap("images/game/icon.ico")
-
-        top_window_width = 400
-        top_window_height = 400
-        top_screen_width = top.winfo_screenwidth()
-        top_screen_height = top.winfo_screenheight()
-        top_x_position = (top_screen_width - top_window_width) // 2
-        top_y_position = (top_screen_height - top_window_height) // 2
-        top.geometry(f"{top_window_width}x{top_window_height}+{top_x_position}+{top_y_position}")
-
-        top_style = ttk.Style()
-        top_style.theme_use('clam')
-        top_style.configure('.', background='#2E2E2E', foreground='white')
-        top_style.configure('Treeview', background='#2E2E2E', fieldbackground='#2E2E2E',
-                            foreground='white')
-
-        tree = ttk.Treeview(top, columns=('Timestamp', 'Move'), show='headings', style='Treeview')
-        tree.heading('Timestamp', text='Time')
-        tree.heading('Move', text='Move')
-
-        for move in chess_data:
-            tree.insert('', 'end', values=(move['timestamp'], move['move']))
-
-        tree.pack(expand=True, fill='both')
-
-        top.mainloop()
-
     def show_last_moves():
         file_path = ".moves_log.json"
+        if not os.path.isfile(file_path):
+            showerror("ERROR", "No data to show.")
+            return
+
         chess_data = load_chess_data(file_path)
         if chess_data:
             show_chess_data(chess_data)
@@ -116,7 +64,7 @@ def choose_skin_theme():
             print("Error loading chess data from the file or no data to show.")
 
     def apply_selection():
-        global SKIN, THEME, COLORS
+        global SKIN, THEME, COLORS, FRAMES_PER_SQUARE
         SKIN = skin_combo.get()
         THEME = theme_combo.get()
 
@@ -127,24 +75,96 @@ def choose_skin_theme():
         elif THEME == 'Green':
             COLORS = [p.Color(238, 238, 210), p.Color(118, 150, 86)]
 
+        FRAMES_PER_SQUARE = int(anim_combo.get()[0])
         root.destroy()
 
     def open_github():
         webbrowser.open("https://github.com/t0ry003/GoodChess")
 
-    apply_button = ttk.Button(root, text="START", command=apply_selection)
-    show_moves_button = ttk.Button(root, text="Show Last Moves", command=show_last_moves)
-    github_button = ttk.Button(root, text="\u2B50GitHub", command=open_github)
+    def show_chess_data(chess_data):
+        top = t.Toplevel()
+        ntkutils.dark_title_bar(top)
+        top.title("Data Viewer")
+        top.iconbitmap("images/game/icon.ico")
 
+        top_window_width = 280
+        top_window_height = 250
+        top_screen_width = top.winfo_screenwidth()
+        top_screen_height = top.winfo_screenheight()
+        top_x_position = (top_screen_width - top_window_width) // 2
+        top_y_position = (top_screen_height - top_window_height) // 2
+        top.geometry(f"{top_window_width}x{top_window_height}+{top_x_position}+{top_y_position}")
+
+        tree = ttk.Treeview(top, columns=('No', 'Player', 'Move'), show='headings', style='Treeview')
+        tree.heading('No', text='No', anchor='center')
+        tree.heading('Player', text='Player', anchor='center')
+        tree.heading('Move', text='Move', anchor='center')
+        # make a scroll bar that moves the treeview up and down
+        scroll = ttk.Scrollbar(top, orient='vertical', command=tree.yview)
+
+        for move in chess_data:
+            tree.insert('', 'end', values=(move['number'], move['player'], move['move']))
+
+        tree.column('No', width=30)
+        tree.column('Player', width=100)
+        tree.column('Move', width=100)
+
+        tree.configure(yscrollcommand=scroll.set)
+        scroll.pack(side='right', fill='y')
+        tree.pack(side='left', fill='both', expand=True)
+
+        top.mainloop()
+
+    global SKIN, THEME, COLORS, FRAMES_PER_SQUARE
+    root = t.Tk()
+    ntkutils.dark_title_bar(root)
+
+    root.title("Good Chess | Settings")
+    root.iconbitmap("images/game/icon.ico")
+
+    window_width = 350
+    window_height = 625
+    screen_width = root.winfo_screenwidth()
+    screen_height = root.winfo_screenheight()
+    x_position = (screen_width - window_width) // 2
+    y_position = (screen_height - window_height) // 2
+    root.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
+
+    main_logo = ImageTk.PhotoImage(Image.open("./images/GAME/icon.ico").resize((150, 150)))
+
+    play_icon = t.PhotoImage(file='./images/GAME/play-icon.png')
+
+    skin_label = ttk.Label(root, text="Choose Skin:")
+    skin_combo = ttk.Combobox(root, values=["Default", "Fantasy", "Minimalist"])
+    skin_combo.set(SKIN)
+
+    theme_label = ttk.Label(root, text="Choose Theme:")
+    theme_combo = ttk.Combobox(root, values=["Default", "Dark", "Green"])
+    theme_combo.set(THEME)
+
+    anim_label = ttk.Label(root, text="Choose Animation Speed:")
+    anim_combo = ttk.Combobox(root, width=1, values=["1 (FAST)", "2", "3", "4", "5", "6", "7", "8", "9 (SLOW)"])
+    anim_combo.set(FRAMES_PER_SQUARE)
+
+    logo_label = ttk.Label(root, image=main_logo)
+
+    apply_button = ttk.Button(root, text="START", command=apply_selection, image=play_icon, compound=t.LEFT)
+    show_moves_button = ttk.Button(root, text="Show Last Moves", command=show_last_moves)
+
+    github_button = ttk.Button(root, text="\u2B50 GitHub", command=open_github)
+
+    logo_label.pack(pady=10)
     skin_label.pack(pady=10)
     skin_combo.pack(pady=10)
     theme_label.pack(pady=10)
     theme_combo.pack(pady=10)
+    anim_label.pack(pady=10)
+    anim_combo.pack(pady=10)
     apply_button.pack(pady=20)
     show_moves_button.pack(pady=10)
     github_button.pack(side=t.LEFT, padx=10, pady=10)
 
-    root.configure(background=dark_bg)
+    sv_ttk.set_theme("dark")
     root.mainloop()
 
 
@@ -159,99 +179,6 @@ def loadImages():
     for piece in pieces:
         IMAGES[piece] = p.transform.scale(p.image.load("images/SKIN_" + SKIN + "/" + piece + ".png"),
                                           (SQ_SIZE, SQ_SIZE))
-
-
-def main():
-    """
-    Run the main chess game loop.
-
-    This function initializes the chess game and runs the main game loop, handling player input and updating the game state accordingly.
-    """
-
-    global SKIN, THEME, COLORS
-    choose_skin_theme()
-    if COLORS == 0:
-        sys.exit("Game did not start. Please choose a skin and theme and press START.")
-    p.init()
-    p.display.set_icon(WINDOW_ICON)
-    p.display.set_caption('Good Chess')
-    screen = p.display.set_mode((BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
-    clock = p.time.Clock()
-    screen.fill(p.Color("white"))
-    moveLogFont = p.font.SysFont("Arial", 25, False, False)
-    gs = ChessEngine.GameState()
-    loadImages()
-    validMoves = gs.getValidMoves()
-    moveMade = False
-    running = True
-    sqSelected = ()
-    playerClicks = []
-    gameOver = False
-
-    while running:
-        for e in p.event.get():
-            if e.type == p.QUIT:
-                running = False
-
-            elif e.type == p.MOUSEBUTTONDOWN:
-                if not gameOver:
-                    location = p.mouse.get_pos()
-                    col = location[0] // SQ_SIZE
-                    row = location[1] // SQ_SIZE
-                    if sqSelected == (row, col) or col >= 8:
-                        sqSelected = ()
-                        playerClicks = []
-                    else:
-                        sqSelected = (row, col)
-                        playerClicks.append(sqSelected)
-                    if len(playerClicks) == 2:
-                        move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
-                        if move in validMoves:
-                            gs.makeMove(move)
-                            moveMade = True
-                            animate = True
-                            sqSelected = ()
-                            playerClicks = []
-                        else:
-                            playerClicks = [sqSelected]
-
-
-            elif e.type == p.KEYDOWN:
-                if e.key == p.K_z:
-                    gs.undoMove()
-                    moveMade = True
-                    animate = False
-                    gameOver = False
-                if e.key == p.K_r:
-                    gs = ChessEngine.GameState()
-                    validMoves = gs.getValidMoves()
-                    sqSelected = ()
-                    playerClicks = []
-                    moveMade = False
-                    animate = False
-                    gameOver = False
-
-        if moveMade:
-            if animate:
-                animateMove(gs.moveLog[-1], screen, gs.board, clock)
-            validMoves = gs.getValidMoves()
-            moveMade = False
-            animate = False
-
-        drawGameState(screen, gs, validMoves, sqSelected, moveLogFont)
-
-        if gs.checkMate:
-            gameOver = True
-            if gs.whiteToMove:
-                drawText(screen, 'Black wins by checkmate')
-            else:
-                drawText(screen, 'Black wins by stalemate')
-        elif gs.staleMate:
-            gameOver = True
-            drawText(screen, 'Stalemate')
-
-        clock.tick(MAX_FPS)
-        p.display.flip()
 
 
 def highlightSquares(screen, gs, validMoves, sqSelected):
@@ -387,11 +314,10 @@ def animateMove(move, screen, board, clock):
     This function animates a chess move on the chessboard, updating the screen and clock accordingly.
     """
 
-    global COLORS
+    global COLORS, FRAMES_PER_SQUARE
     dR = move.endRow - move.startRow
     dC = move.endCol - move.startCol
-    framesPerSquare = 10
-    frameCount = (abs(dR) + abs(dC)) * framesPerSquare
+    frameCount = (abs(dR) + abs(dC)) * FRAMES_PER_SQUARE
     for frame in range(frameCount + 1):
         r, c = (move.startRow + dR * frame / frameCount, move.startCol + dC * frame / frameCount)
         drawBoard(screen)
@@ -435,15 +361,124 @@ def save_moves_to_json(moves_log):
 
     This function converts the moves log to a JSON format, including timestamps, and saves it to a file named 'moves_log.json'.
     """
-
-    timestamped_moves = [{'timestamp': str(datetime.now()), 'move': move} for move in moves_log]
-    # show just the date, hour, and minute
-    timestamped_moves = [{'timestamp': move['timestamp'][:16], 'move': move['move']} for move in timestamped_moves]
+    # add the white and black names to the moves log, knowing that white always starts
+    player_moves = []
+    white_name = "White"
+    black_name = "Black"
+    for i in range(len(moves_log)):
+        if i % 2 == 0:
+            player_moves.append({
+                "number": i + 1,
+                "player": white_name,
+                "move": moves_log[i]
+            })
+        else:
+            player_moves.append({
+                "number": i + 1,
+                "player": black_name,
+                "move": moves_log[i]
+            })
 
     with open('.moves_log.json', 'w') as json_file:
-        json.dump(timestamped_moves, json_file)
+        json.dump(player_moves, json_file)
+
+
+def main():
+    """
+    Run the main chess game loop.
+
+    This function initializes the chess game and runs the main game loop, handling player input and updating the game state accordingly.
+    """
+
+    global SKIN, THEME, COLORS
+    choose_skin_theme()
+    if COLORS == 0:
+        sys.exit("Game did not start. Please choose a skin and theme and press START.")
+    p.init()
+    p.display.set_icon(WINDOW_ICON)
+    p.display.set_caption('Good Chess')
+    screen = p.display.set_mode((BOARD_WIDTH + MOVE_LOG_PANEL_WIDTH, BOARD_HEIGHT))
+    clock = p.time.Clock()
+    screen.fill(p.Color("white"))
+    moveLogFont = p.font.SysFont("Arial", 25, False, False)
+    gs = ChessEngine.GameState()
+    loadImages()
+    validMoves = gs.getValidMoves()
+    moveMade = False
+    running = True
+    sqSelected = ()
+    playerClicks = []
+    gameOver = False
+
+    while running:
+        for e in p.event.get():
+            if e.type == p.QUIT:
+                running = False
+
+            elif e.type == p.MOUSEBUTTONDOWN:
+                if not gameOver:
+                    location = p.mouse.get_pos()
+                    col = location[0] // SQ_SIZE
+                    row = location[1] // SQ_SIZE
+                    if sqSelected == (row, col) or col >= 8:
+                        sqSelected = ()
+                        playerClicks = []
+                    else:
+                        sqSelected = (row, col)
+                        playerClicks.append(sqSelected)
+                    if len(playerClicks) == 2:
+                        move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
+                        if move in validMoves:
+                            gs.makeMove(move)
+                            moveMade = True
+                            animate = True
+                            sqSelected = ()
+                            playerClicks = []
+                        else:
+                            playerClicks = [sqSelected]
+
+
+            elif e.type == p.KEYDOWN:
+                if e.key == p.K_z:
+                    gs.undoMove()
+                    moveMade = True
+                    animate = False
+                    gameOver = False
+                if e.key == p.K_r:
+                    gs = ChessEngine.GameState()
+                    validMoves = gs.getValidMoves()
+                    sqSelected = ()
+                    playerClicks = []
+                    moveMade = False
+                    animate = False
+                    gameOver = False
+
+        if moveMade:
+            if animate:
+                animateMove(gs.moveLog[-1], screen, gs.board, clock)
+            validMoves = gs.getValidMoves()
+            moveMade = False
+            animate = False
+
+        drawGameState(screen, gs, validMoves, sqSelected, moveLogFont)
+
+        if gs.checkMate:
+            gameOver = True
+            if gs.whiteToMove:
+                drawText(screen, 'Black wins by checkmate')
+            else:
+                drawText(screen, 'Black wins by stalemate')
+        elif gs.staleMate:
+            gameOver = True
+            drawText(screen, 'Stalemate')
+
+        clock.tick(MAX_FPS)
+        p.display.flip()
 
 
 if __name__ == "__main__":
     main()
-    save_moves_to_json(MOVES_LOG)
+
+    # if in game were made at least 2 moves, save the moves log to a json file
+    if len(MOVES_LOG) >= 2:
+        save_moves_to_json(MOVES_LOG)
