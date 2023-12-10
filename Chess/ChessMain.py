@@ -11,7 +11,6 @@ import tkinter as t
 from tkinter import ttk
 from PIL import ImageTk, Image
 import webbrowser
-import sv_ttk
 from tkmessagebox import *
 import ntkutils
 import ChessEngine
@@ -36,8 +35,7 @@ THEME = 'Default'
 COLORS = 0
 MOVES_LOG = []
 
-
-def choose_skin_theme():
+def menu():
     """
         Display a GUI window to allow the user to choose the skin and theme for the chessboard.
 
@@ -76,7 +74,13 @@ def choose_skin_theme():
             COLORS = [p.Color(238, 238, 210), p.Color(118, 150, 86)]
 
         FRAMES_PER_SQUARE = int(anim_combo.get()[0])
+
+        shutdown_ttk_repeat()
+
+    def shutdown_ttk_repeat():
+        root.eval('::ttk::CancelRepeat')
         root.destroy()
+        root.quit()
 
     def open_github():
         webbrowser.open("https://github.com/t0ry003/GoodChess")
@@ -123,7 +127,7 @@ def choose_skin_theme():
     root.iconbitmap("images/game/icon.ico")
 
     window_width = 350
-    window_height = 625
+    window_height = 640
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
     x_position = (screen_width - window_width) // 2
@@ -143,7 +147,7 @@ def choose_skin_theme():
     theme_combo.set(THEME)
 
     anim_label = ttk.Label(root, text="Choose Animation Speed:")
-    anim_combo = ttk.Combobox(root, width=1, values=["1 (FAST)", "2", "3", "4", "5", "6", "7", "8", "9 (SLOW)"])
+    anim_combo = ttk.Combobox(root, width=4, values=["1 (FAST)", "2", "3", "4", "5", "6", "7", "8", "9 (SLOW)"])
     anim_combo.set(FRAMES_PER_SQUARE)
 
     logo_label = ttk.Label(root, image=main_logo)
@@ -153,7 +157,7 @@ def choose_skin_theme():
 
     github_button = ttk.Button(root, text="\u2B50 GitHub", command=open_github)
 
-    logo_label.pack(pady=10)
+    logo_label.pack(pady=20)
     skin_label.pack(pady=10)
     skin_combo.pack(pady=10)
     theme_label.pack(pady=10)
@@ -164,8 +168,55 @@ def choose_skin_theme():
     show_moves_button.pack(pady=10)
     github_button.pack(side=t.LEFT, padx=10, pady=10)
 
-    sv_ttk.set_theme("dark")
+    root.tk.call('source', './images/THEME/sun-valley.tcl')
+    root.tk.call('set_theme', 'dark')
+    root.protocol("WM_DELETE_WINDOW", shutdown_ttk_repeat)
     root.mainloop()
+
+
+def askPawnPromotion():
+    """
+    Ask the player which piece to promote the pawn to.
+
+    This function uses a Tkinter window to prompt the player for a piece to promote the pawn to.
+    """
+
+    def apply_selection():
+        global PROMOTION_PIECE
+        PROMOTION_PIECE = promotion_combo.get()
+        popup.destroy()
+        popup.quit()
+
+    global PROMOTION_PIECE
+    popup = t.Tk()
+    ntkutils.dark_title_bar(popup)
+
+    popup.tk.call('source', './images/THEME/sun-valley.tcl')
+    popup.tk.call('set_theme', 'dark')
+
+    popup.title("Good Chess | Pawn Promotion")
+    popup.iconbitmap("images/GAME/icon.ico")
+
+    window_width = 350
+    window_height = 200
+    screen_width = popup.winfo_screenwidth()
+    screen_height = popup.winfo_screenheight()
+    x_position = (screen_width - window_width) // 2
+    y_position = (screen_height - window_height) // 2
+    popup.geometry(f"{window_width}x{window_height}+{x_position}+{y_position}")
+
+    promotion_label = ttk.Label(popup, text="Choose a piece to promote the pawn to:")
+    promotion_combo = ttk.Combobox(popup, values=["Queen", "Rook", "Bishop", "Knight"])
+    promotion_combo.set("Queen")
+
+    apply_button = ttk.Button(popup, text="APPLY", command=apply_selection)
+
+    promotion_label.pack(pady=10)
+    promotion_combo.pack(pady=10)
+    apply_button.pack(pady=20)
+
+    popup.mainloop()
+    return PROMOTION_PIECE[0]
 
 
 def loadImages():
@@ -391,7 +442,7 @@ def main():
     """
 
     global SKIN, THEME, COLORS
-    choose_skin_theme()
+    menu()
     if COLORS == 0:
         sys.exit("Game did not start. Please choose a skin and theme and press START.")
     p.init()
@@ -428,13 +479,17 @@ def main():
                         playerClicks.append(sqSelected)
                     if len(playerClicks) == 2:
                         move = ChessEngine.Move(playerClicks[0], playerClicks[1], gs.board)
-                        if move in validMoves:
-                            gs.makeMove(move)
-                            moveMade = True
-                            animate = True
-                            sqSelected = ()
-                            playerClicks = []
-                        else:
+                        for i in range(len(validMoves)):
+                            if move == validMoves[i]:
+                                if validMoves[i].isPawnPromotion:
+                                    piece = askPawnPromotion()
+                                    gs.promotionChoice = piece
+                                gs.makeMove(validMoves[i])
+                                moveMade = True
+                                animate = True
+                                sqSelected = ()
+                                playerClicks = []
+                        if not moveMade:
                             playerClicks = [sqSelected]
 
 
