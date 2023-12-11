@@ -29,8 +29,6 @@ SCROLL_OFFSET = 1
 SCROLL_SPEED = 1
 FRAMES_PER_SQUARE = 9
 PRACTICE_MODE = False
-
-# Global variables
 SKIN = 'Default'
 THEME = 'Default'
 COLORS = 0
@@ -512,22 +510,22 @@ def main():
                         if not moveMade:
                             playerClicks = [sqSelected]
 
-                if PRACTICE_MODE:
-                    if e.key == p.K_z:
-                        gs.undoMove()
-                        if len(MOVES_LOG) > 0:
-                            MOVES_LOG.pop()
-                        moveMade = True
-                        ANIMATE = False
-                        gameOver = False
-                    if e.key == p.K_r:
-                        gs = ChessEngine.GameState()
-                        validMoves = gs.getValidMoves()
-                        sqSelected = ()
-                        playerClicks = []
-                        moveMade = False
-                        ANIMATE = False
-                        gameOver = False
+            elif (e.type == p.KEYDOWN and PRACTICE_MODE) or (e.type == p.KEYDOWN and gameOver):
+                if e.key == p.K_z:
+                    gs.undoMove()
+                    if len(MOVES_LOG) > 0:
+                        MOVES_LOG.pop()
+                    moveMade = True
+                    ANIMATE = False
+                    gameOver = False
+                if e.key == p.K_r:
+                    gs = ChessEngine.GameState()
+                    validMoves = gs.getValidMoves()
+                    sqSelected = ()
+                    playerClicks = []
+                    moveMade = False
+                    ANIMATE = False
+                    gameOver = False
 
             elif e.type == p.KEYDOWN:
                 pass
@@ -544,9 +542,9 @@ def main():
         if gs.checkMate:
             gameOver = True
             if gs.whiteToMove:
-                drawText(screen, 'Black wins by checkmate')
+                drawText(screen, 'Black wins by checkmate', font_color='Black', shadow_color='Red')
             else:
-                drawText(screen, 'White wins by checkmate')
+                drawText(screen, 'White wins by checkmate', font_color='White', shadow_color='Green')
         elif gs.staleMate:
             gameOver = True
             drawText(screen, 'Stalemate')
