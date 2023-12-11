@@ -41,7 +41,7 @@ GoodChess is a simple yet powerful chess game created in Python. It supports sta
 1. Ensure you have Python installed on your machine.
 2. Install the required libraries by running:
    ```bash
-   pip install pygame
+   pip install -r requirements.txt
     ```
 3. Clone this repository:
 4. Run the following command to start the game:
