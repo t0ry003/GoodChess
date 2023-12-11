@@ -25,15 +25,18 @@ MAX_FPS = 15
 IMAGES = {}
 WINDOW_ICON = p.image.load('images/game/icon.png')
 ANIMATE = True
-SCROLL_OFFSET = 0
+SCROLL_OFFSET = 1
 SCROLL_SPEED = 1
 FRAMES_PER_SQUARE = 9
+PRACTICE_MODE = False
 
 # Global variables
 SKIN = 'Default'
 THEME = 'Default'
 COLORS = 0
 MOVES_LOG = []
+PROMOTION_PIECE = 'Queen'
+
 
 def menu():
     """
@@ -62,7 +65,7 @@ def menu():
             print("Error loading chess data from the file or no data to show.")
 
     def apply_selection():
-        global SKIN, THEME, COLORS, FRAMES_PER_SQUARE
+        global SKIN, THEME, COLORS, FRAMES_PER_SQUARE, PRACTICE_MODE
         SKIN = skin_combo.get()
         THEME = theme_combo.get()
 
@@ -74,6 +77,7 @@ def menu():
             COLORS = [p.Color(238, 238, 210), p.Color(118, 150, 86)]
 
         FRAMES_PER_SQUARE = int(anim_combo.get()[0])
+        PRACTICE_MODE = var_practice_mode.get()
 
         shutdown_ttk_repeat()
 
@@ -119,7 +123,7 @@ def menu():
 
         top.mainloop()
 
-    global SKIN, THEME, COLORS, FRAMES_PER_SQUARE
+    global SKIN, THEME, COLORS, FRAMES_PER_SQUARE, PRACTICE_MODE
     root = t.Tk()
     ntkutils.dark_title_bar(root)
 
@@ -127,7 +131,7 @@ def menu():
     root.iconbitmap("images/game/icon.ico")
 
     window_width = 350
-    window_height = 640
+    window_height = 650
     screen_width = root.winfo_screenwidth()
     screen_height = root.winfo_screenheight()
     x_position = (screen_width - window_width) // 2
@@ -150,20 +154,24 @@ def menu():
     anim_combo = ttk.Combobox(root, width=4, values=["1 (FAST)", "2", "3", "4", "5", "6", "7", "8", "9 (SLOW)"])
     anim_combo.set(FRAMES_PER_SQUARE)
 
+    var_practice_mode = t.IntVar()
+    practice_mode_checkbox = ttk.Checkbutton(root, text="Practice Mode", variable=var_practice_mode)
+
     logo_label = ttk.Label(root, image=main_logo)
 
-    apply_button = ttk.Button(root, text="START", command=apply_selection, image=play_icon, compound=t.LEFT)
+    apply_button = ttk.Button(root, command=apply_selection, image=play_icon)
     show_moves_button = ttk.Button(root, text="Show Last Moves", command=show_last_moves)
 
     github_button = ttk.Button(root, text="\u2B50 GitHub", command=open_github)
 
-    logo_label.pack(pady=20)
-    skin_label.pack(pady=10)
+    logo_label.pack(pady=10)
+    skin_label.pack(pady=0)
     skin_combo.pack(pady=10)
-    theme_label.pack(pady=10)
+    theme_label.pack(pady=0)
     theme_combo.pack(pady=10)
-    anim_label.pack(pady=10)
+    anim_label.pack(pady=0)
     anim_combo.pack(pady=10)
+    practice_mode_checkbox.pack(pady=10)
     apply_button.pack(pady=20)
     show_moves_button.pack(pady=10)
     github_button.pack(side=t.LEFT, padx=10, pady=10)
@@ -322,7 +330,7 @@ def drawMoveLog(screen, gs, font):
     - gs: The current game state.
     - font: Pygame font for the move log.
 
-    This function draws the move log on the right side of the chessboard, including timestamps for each move.
+    This function draws the move log on the right side of the chessboard.
     """
 
     global SCROLL_OFFSET, MOVES_LOG
@@ -383,24 +391,36 @@ def animateMove(move, screen, board, clock):
         clock.tick(60)
 
 
-def drawText(screen, text):
+def drawText(screen, text, font_size=60, font_color='Black', shadow_color='White'):
     """
-    Draw text on the screen.
+    Draw enhanced text on the screen.
 
     Args:
     - screen: The Pygame display surface.
     - text: The text to display.
-
-    This function draws text on the screen using a specified font.
+    - font_size: The size of the font.
+    - font_color: The color of the text.
+    - shadow_color: The color of the text shadow.
     """
 
-    font = p.font.SysFont("Helvitca", 45, True, False)
-    textObject = font.render(text, 0, p.Color('Gray'))
-    textLocation = p.Rect(0, 0, BOARD_WIDTH, BOARD_HEIGHT).move(BOARD_WIDTH / 2 - textObject.get_width() / 2,
-                                                                BOARD_HEIGHT / 2 - textObject.get_height() / 2)
+    font = p.font.SysFont("Arial", font_size, True, False)
+
+    # Render the main text
+    textObject = font.render(text, True, p.Color(shadow_color))
+    textLocation = p.Rect(0, 0, BOARD_WIDTH, BOARD_HEIGHT).move(
+        BOARD_WIDTH / 2 - textObject.get_width() / 2,
+        BOARD_HEIGHT / 2 - textObject.get_height() / 2
+    )
+
+    # Draw the main text
     screen.blit(textObject, textLocation)
-    textObject = font.render(text, 0, p.Color('Black'))
-    screen.blit(textObject, textLocation.move(2, 2))
+
+    # Render the text shadow
+    textObject = font.render(text, True, p.Color(font_color))
+    shadow_location = textLocation.move(2, 2)
+
+    # Draw the text shadow
+    screen.blit(textObject, shadow_location)
 
 
 def save_moves_to_json(moves_log):
@@ -441,7 +461,7 @@ def main():
     This function initializes the chess game and runs the main game loop, handling player input and updating the game state accordingly.
     """
 
-    global SKIN, THEME, COLORS
+    global SKIN, THEME, COLORS, MOVES_LOG, ANIMATE, PRACTICE_MODE
     menu()
     if COLORS == 0:
         sys.exit("Game did not start. Please choose a skin and theme and press START.")
@@ -486,34 +506,38 @@ def main():
                                     gs.promotionChoice = piece
                                 gs.makeMove(validMoves[i])
                                 moveMade = True
-                                animate = True
+                                ANIMATE = True
                                 sqSelected = ()
                                 playerClicks = []
                         if not moveMade:
                             playerClicks = [sqSelected]
 
+                if PRACTICE_MODE:
+                    if e.key == p.K_z:
+                        gs.undoMove()
+                        if len(MOVES_LOG) > 0:
+                            MOVES_LOG.pop()
+                        moveMade = True
+                        ANIMATE = False
+                        gameOver = False
+                    if e.key == p.K_r:
+                        gs = ChessEngine.GameState()
+                        validMoves = gs.getValidMoves()
+                        sqSelected = ()
+                        playerClicks = []
+                        moveMade = False
+                        ANIMATE = False
+                        gameOver = False
 
             elif e.type == p.KEYDOWN:
-                if e.key == p.K_z:
-                    gs.undoMove()
-                    moveMade = True
-                    animate = False
-                    gameOver = False
-                if e.key == p.K_r:
-                    gs = ChessEngine.GameState()
-                    validMoves = gs.getValidMoves()
-                    sqSelected = ()
-                    playerClicks = []
-                    moveMade = False
-                    animate = False
-                    gameOver = False
+                pass
 
         if moveMade:
-            if animate:
+            if ANIMATE:
                 animateMove(gs.moveLog[-1], screen, gs.board, clock)
             validMoves = gs.getValidMoves()
             moveMade = False
-            animate = False
+            ANIMATE = False
 
         drawGameState(screen, gs, validMoves, sqSelected, moveLogFont)
 
@@ -522,7 +546,7 @@ def main():
             if gs.whiteToMove:
                 drawText(screen, 'Black wins by checkmate')
             else:
-                drawText(screen, 'Black wins by stalemate')
+                drawText(screen, 'White wins by checkmate')
         elif gs.staleMate:
             gameOver = True
             drawText(screen, 'Stalemate')
