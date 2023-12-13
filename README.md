@@ -28,34 +28,52 @@
 
 ## Overview
 
-GoodChess is a simple yet powerful chess game created in Python. It supports standard chess rules, offering an engaging and strategic gameplay experience.
+GoodChess is a simple yet powerful chess game created in Python. It supports standard chess rules, offering an engaging
+and strategic gameplay experience.
 
 ## Features:
 
 - **Graphical User Interface:** Enjoy playing chess in a visually appealing environment.
-- **Move Log:** Keep track of all moves made during the game with a move log displayed on the right side of the chessboard.
-- **Undo Move:** Made a mistake? No worries! You can undo your last move and try a different strategy.
+- **Move Log:** Keep track of all moves made during the game with a move log displayed on the right side of the
+  chessboard.
+- **Move Highlighting:** Highlight all possible moves for a selected piece.
+- **Themes:** Choose between board themes and piece themes to customize your gaming experience.
+- **Practice Mode:** Practise your chess skills by playing against the computer.
+- **Undo Move:** Made a mistake? No worries! You can undo your last move and try a different strategy when playing using
+  practice mode.
+- **Restart Game:** Want to start over? You can restart the game at any time by pressing the R key.
+- **Checkmate and Stalemate:** The game ends when a player is in checkmate or stalemate.
 
 ## How to Play:
 
-1. Ensure you have Python installed on your machine.
-2. Install the required libraries by running:
+### Precompiled Executable:
+
+1. Download the latest release from [here](https://github.com/t0ry003/GoodChess/releases/latest).
+2. Unzip the downloaded file.
+3. Run the executable file.
+
+### From Source:
+
+1. Ensure you have Python installed on your machine;
+2. Clone this repository and navigate to the Chess directory;
+3. Install the required libraries by running the following command in the terminal:
    ```bash
    pip install -r requirements.txt
     ```
-3. Clone this repository:
 4. Run the following command to start the game:
    ```bash
    python ChessMain.py
    ```
 5. Enjoy!
 
-
 ## Controls:
 
 - **Mouse Click:** Select and move pieces by clicking on the source and destination squares.
-- **Z Key:** Undo the last move.
-- **R Key:** Restart the game.
+
+#### Only in practice mode:
+
+- `Z Key` Undo the last move.
+- `R Key` Restart the game.
 
 ## 📄 [Documentation](/DOCUMENTATION.md)
 

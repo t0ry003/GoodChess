@@ -486,7 +486,7 @@ def main():
             if e.type == p.QUIT:
                 running = False
 
-            elif e.type == p.MOUSEBUTTONDOWN:
+            elif e.type == p.MOUSEBUTTONDOWN and e.button == 1:
                 if not gameOver:
                     location = p.mouse.get_pos()
                     col = location[0] // SQ_SIZE

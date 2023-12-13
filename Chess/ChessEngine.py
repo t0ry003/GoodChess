@@ -424,7 +424,6 @@ class GameState:
         - r: The row of the king.
         - c: The column of the king.
         - moves: A list to append the generated moves to.
-        - allyColor: The color of the king.
 
         This method generates all possible castle moves for a king at the specified square.
         """
