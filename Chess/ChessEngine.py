@@ -4,6 +4,7 @@ Engine Script
 
 import copy
 
+
 class GameState:
     """
             Initialize a new chess game state.
@@ -30,8 +31,8 @@ class GameState:
             ["--", "--", "--", "--", "--", "--", "--", "--"],
             ["wP", "wP", "wP", "wP", "wP", "wP", "wP", "wP"],
             ["wR", "wN", "wB", "wQ", "wK", "wB", "wN", "wR"]]
-        self.moveFunctions = {'P': self.getPawnMoves, 'R': self.getRookMoves, 'N': self.getKnightMoves,
-                              'B': self.getBishopMoves, 'Q': self.getQueenMoves, 'K': self.getKingMoves}
+        self.moveFunctions = {'P': self.get_pawn_moves, 'R': self.get_rook_moves, 'N': self.get_knight_moves,
+                              'B': self.get_bishop_moves, 'Q': self.get_queen_moves, 'K': self.get_king_moves}
 
         self.whiteToMove = True
         self.moveLog = []
@@ -45,7 +46,7 @@ class GameState:
         self.castleRightsLog = [CastleRights(self.currentCastlingRights.wks, self.currentCastlingRights.bks,
                                              self.currentCastlingRights.wqs, self.currentCastlingRights.bqs)]
 
-    def makeMove(self, move):
+    def make_move(self, move):
         """
                 Make a move on the chessboard and update the game state accordingly.
 
@@ -82,11 +83,11 @@ class GameState:
                 self.board[move.endRow][move.endCol + 1] = self.board[move.endRow][move.endCol - 2]
                 self.board[move.endRow][move.endCol - 2] = '--'
 
-        self.updateCastlingRights(move)
+        self.update_castling_rights(move)
         self.castleRightsLog.append(CastleRights(self.currentCastlingRights.wks, self.currentCastlingRights.bks,
                                                  self.currentCastlingRights.wqs, self.currentCastlingRights.bqs))
 
-    def undoMove(self):
+    def undo_move(self):
         """
         Undo the last move made in the game.
 
@@ -120,7 +121,7 @@ class GameState:
                     self.board[move.endRow][move.endCol - 2] = self.board[move.endRow][move.endCol + 1]
                     self.board[move.endRow][move.endCol + 1] = '--'
 
-    def updateCastlingRights(self, move):
+    def update_castling_rights(self, move):
         """
         Update the castling rights after a move is made.
 
@@ -161,7 +162,7 @@ class GameState:
                 elif move.endCol == 7:
                     self.currentCastlingRights.bks = False
 
-    def getValidMoves(self):
+    def get_valid_moves(self):
         """
         Get a list of valid moves for the current player.
 
@@ -174,20 +175,20 @@ class GameState:
         tempEnpassantPossible = self.enpassantPossible
         tempCastleRights = CastleRights(self.currentCastlingRights.wks, self.currentCastlingRights.bks,
                                         self.currentCastlingRights.wqs, self.currentCastlingRights.bqs)
-        moves = self.getAllPossibleMoves()
+        moves = self.get_all_possible_moves()
         if self.whiteToMove:
-            self.getCastleMoves(self.whiteKingLocation[0], self.whiteKingLocation[1], moves, 'w')
+            self.get_castle_moves(self.whiteKingLocation[0], self.whiteKingLocation[1], moves)
         else:
-            self.getCastleMoves(self.blackKingLocation[0], self.blackKingLocation[1], moves, 'b')
+            self.get_castle_moves(self.blackKingLocation[0], self.blackKingLocation[1], moves)
         for i in range(len(moves) - 1, -1, -1):
-            self.makeMove(moves[i])
+            self.make_move(moves[i])
             self.whiteToMove = not self.whiteToMove
-            if self.inCheck():
+            if self.in_check():
                 moves.remove(moves[i])
             self.whiteToMove = not self.whiteToMove
-            self.undoMove()
+            self.undo_move()
         if len(moves) == 0:
-            if self.inCheck():
+            if self.in_check():
                 self.checkMate = True
             else:
                 self.staleMate = True
@@ -199,7 +200,7 @@ class GameState:
         self.currentCastlingRights = tempCastleRights
         return moves
 
-    def inCheck(self):
+    def in_check(self):
         """
         Check if the current player's King is in check.
 
@@ -208,11 +209,11 @@ class GameState:
         """
 
         if self.whiteToMove:
-            return self.squareUnderAttack(self.whiteKingLocation[0], self.whiteKingLocation[1])
+            return self.square_under_attack(self.whiteKingLocation[0], self.whiteKingLocation[1])
         else:
-            return self.squareUnderAttack(self.blackKingLocation[0], self.blackKingLocation[1])
+            return self.square_under_attack(self.blackKingLocation[0], self.blackKingLocation[1])
 
-    def squareUnderAttack(self, r, c):
+    def square_under_attack(self, r, c):
         """
         Check if a square on the chessboard is under attack by the opponent.
 
@@ -227,14 +228,14 @@ class GameState:
         """
 
         self.whiteToMove = not self.whiteToMove
-        oppMoves = self.getAllPossibleMoves()
+        oppMoves = self.get_all_possible_moves()
         self.whiteToMove = not self.whiteToMove
         for move in oppMoves:
             if move.endRow == r and move.endCol == c:
                 return True
         return False
 
-    def getAllPossibleMoves(self):
+    def get_all_possible_moves(self):
         """
         Get all possible moves for the current player.
 
@@ -253,7 +254,7 @@ class GameState:
                     self.moveFunctions[piece](r, c, moves)
         return moves
 
-    def getPawnMoves(self, r, c, moves):
+    def get_pawn_moves(self, r, c, moves):
         """
         Get possible moves for a pawn at a given square.
 
@@ -296,7 +297,7 @@ class GameState:
                 elif (r + 1, c + 1) == self.enpassantPossible:
                     moves.append(Move((r, c), (r + 1, c + 1), self.board, isEnpassantMove=True))
 
-    def getRookMoves(self, r, c, moves):
+    def get_rook_moves(self, r, c, moves):
         """
         Get possible moves for a rook at a given square.
 
@@ -326,7 +327,7 @@ class GameState:
                 else:
                     break
 
-    def getKnightMoves(self, r, c, moves):
+    def get_knight_moves(self, r, c, moves):
         """
         Get possible moves for a knight at a given square.
 
@@ -348,7 +349,7 @@ class GameState:
                 if endPiece[0] != allyColor:
                     moves.append(Move((r, c), (endRow, endCol), self.board))
 
-    def getBishopMoves(self, r, c, moves):
+    def get_bishop_moves(self, r, c, moves):
         """
         Get possible moves for a bishop at a given square.
 
@@ -378,7 +379,7 @@ class GameState:
                 else:
                     break
 
-    def getQueenMoves(self, r, c, moves):
+    def get_queen_moves(self, r, c, moves):
         """
         Get possible moves for a queen at a given square.
 
@@ -390,10 +391,10 @@ class GameState:
         This method generates all possible moves for a queen at the specified square.
         """
 
-        self.getRookMoves(r, c, moves)
-        self.getBishopMoves(r, c, moves)
+        self.get_rook_moves(r, c, moves)
+        self.get_bishop_moves(r, c, moves)
 
-    def getKingMoves(self, r, c, moves):
+    def get_king_moves(self, r, c, moves):
         """
         Get possible moves for a king at a given square.
 
@@ -415,7 +416,7 @@ class GameState:
                 if endPiece[0] != allyColor:
                     moves.append(Move((r, c), (endRow, endCol), self.board))
 
-    def getCastleMoves(self, r, c, moves, allyColor):
+    def get_castle_moves(self, r, c, moves):
         """
         Get possible castle moves for a king at a given square.
 
@@ -428,23 +429,23 @@ class GameState:
         This method generates all possible castle moves for a king at the specified square.
         """
 
-        if self.squareUnderAttack(r, c):
+        if self.square_under_attack(r, c):
             return
         if (self.whiteToMove and self.currentCastlingRights.wks) or (
                 not self.whiteToMove and self.currentCastlingRights.bks):
-            self.getKingsideCastleMoves(r, c, moves, allyColor)
+            self.get_kingside_castle_moves(r, c, moves)
         if (self.whiteToMove and self.currentCastlingRights.wqs) or (
                 not self.whiteToMove and self.currentCastlingRights.bqs):
-            self.getQueensideCastleMoves(r, c, moves, allyColor)
+            self.get_queen_side_castle_moves(r, c, moves)
 
-    def getKingsideCastleMoves(self, r, c, moves, allyColor):
+    def get_kingside_castle_moves(self, r, c, moves):
         if self.board[r][c + 1] == '--' and self.board[r][c + 2] == '--':
-            if not self.squareUnderAttack(r, c + 1) and not self.squareUnderAttack(r, c + 2):
+            if not self.square_under_attack(r, c + 1) and not self.square_under_attack(r, c + 2):
                 moves.append(Move((r, c), (r, c + 2), self.board, isCastleMove=True))
 
-    def getQueensideCastleMoves(self, r, c, moves, allyColor):
+    def get_queen_side_castle_moves(self, r, c, moves):
         if self.board[r][c - 1] == '--' and self.board[r][c - 2] == '--' and self.board[r][c - 3] == '--':
-            if not self.squareUnderAttack(r, c - 1) and not self.squareUnderAttack(r, c - 2):
+            if not self.square_under_attack(r, c - 1) and not self.square_under_attack(r, c - 2):
                 moves.append(Move((r, c), (r, c - 2), self.board, isCastleMove=True))
 
 
@@ -453,10 +454,10 @@ class CastleRights:
     A class to keep track of the castling rights for each player.
 
     Attributes:
-    - wks: Boolean flag indicating if White can castle kingside.
-    - wqs: Boolean flag indicating if White can castle queenside.
-    - bks: Boolean flag indicating if Black can castle kingside.
-    - bqs: Boolean flag indicating if Black can castle queenside.
+    - wks: Boolean flag indicating if White can castle king side.
+    - wqs: Boolean flag indicating if White can castle queen side.
+    - bks: Boolean flag indicating if Black can castle king side.
+    - bqs: Boolean flag indicating if Black can castle queen side.
     """
 
     def __init__(self, wks, bks, wqs, bqs):
@@ -516,7 +517,7 @@ class Move:
             return self.moveID == other.moveID
         return False
 
-    def getChessNotation(self):
+    def get_chess_notation(self):
         """
         Get the standard algebraic notation (SAN) for the move.
 

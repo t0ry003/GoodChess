@@ -9,7 +9,6 @@ import sys
 import pygame as p
 import tkinter as t
 from tkinter import ttk
-from PIL import ImageTk, Image
 import webbrowser
 from tkmessagebox import *
 import ntkutils
@@ -23,7 +22,7 @@ DIMENSION = 8
 SQ_SIZE = BOARD_HEIGHT // DIMENSION
 MAX_FPS = 15
 IMAGES = {}
-WINDOW_ICON = p.image.load('images/game/icon.png')
+WINDOW_ICON = p.image.load('images/GAME/icon.png')
 ANIMATE = True
 SCROLL_OFFSET = 1
 SCROLL_SPEED = 1
@@ -42,7 +41,8 @@ def menu():
 
         Updates global variables SKIN, THEME, and COLORS.
 
-        This function uses a Tkinter window to prompt the user for skin and theme preferences and updates global variables accordingly.
+        This function uses a Tkinter window to prompt the user for skin and theme preferences and updates global
+        variables accordingly.
     """
 
     def load_chess_data(file_path):
@@ -180,7 +180,7 @@ def menu():
     root.mainloop()
 
 
-def askPawnPromotion():
+def ask_pawn_promotion():
     """
     Ask the player which piece to promote the pawn to.
 
@@ -225,11 +225,11 @@ def askPawnPromotion():
     return PROMOTION_PIECE[0]
 
 
-def loadImages():
+def load_images():
     """
     Load chess piece images based on the chosen skin.
 
-    This function loads images of chess pieces based on the global variable SKIN and scales them to the appropriate size.
+    This function loads images of chess pieces based on the global variable SKIN and scales them to the appropriate size
     """
 
     pieces = ["wP", "wR", "wN", "wB", "wQ", "wK", "bP", "bR", "bN", "bB", "bQ", "bK"]
@@ -238,7 +238,7 @@ def loadImages():
                                           (SQ_SIZE, SQ_SIZE))
 
 
-def highlightSquares(screen, gs, validMoves, sqSelected):
+def highlight_squares(screen, gs, validMoves, sqSelected):
     """
     Highlight valid moves on the chessboard.
 
@@ -264,7 +264,7 @@ def highlightSquares(screen, gs, validMoves, sqSelected):
                     screen.blit(s, (move.endCol * SQ_SIZE, move.endRow * SQ_SIZE))
 
 
-def drawGameState(screen, gs, validMoves, sqSelected, moveLogFont):
+def draw_game_state(screen, gs, validMoves, sqSelected, moveLogFont):
     """
     Draw the current state of the chessboard.
 
@@ -278,13 +278,13 @@ def drawGameState(screen, gs, validMoves, sqSelected, moveLogFont):
     This function draws the chessboard, pieces, and move log on the screen based on the provided parameters.
     """
 
-    drawBoard(screen)
-    highlightSquares(screen, gs, validMoves, sqSelected)
-    drawPieces(screen, gs.board)
-    drawMoveLog(screen, gs, moveLogFont)
+    draw_board(screen)
+    highlight_squares(screen, gs, validMoves, sqSelected)
+    draw_pieces(screen, gs.board)
+    draw_move_log(screen, gs, moveLogFont)
 
 
-def drawBoard(screen):
+def draw_board(screen):
     """
     Draw the chessboard grid on the screen.
 
@@ -301,7 +301,7 @@ def drawBoard(screen):
             p.draw.rect(screen, color, p.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
 
-def drawPieces(screen, board):
+def draw_pieces(screen, board):
     """
     Draw the chess pieces on the chessboard.
 
@@ -319,7 +319,7 @@ def drawPieces(screen, board):
                 screen.blit(IMAGES[piece], p.Rect(c * SQ_SIZE, r * SQ_SIZE, SQ_SIZE, SQ_SIZE))
 
 
-def drawMoveLog(screen, gs, font):
+def draw_move_log(screen, gs, font):
     """
     Draw the move log on the right side of the chessboard.
 
@@ -343,14 +343,14 @@ def drawMoveLog(screen, gs, font):
 
     for i in range(len(moveTexts)):
         move_number = i + 1
-        text = f"{move_number}. {moveTexts[i].getChessNotation()}"
+        text = f"{move_number}. {moveTexts[i].get_chess_notation()}"
         textObject = font.render(text, True, p.Color('white'))
         textLocation = moveLogRect.move(padding, textY)
         screen.blit(textObject, textLocation)
         textY += textObject.get_height() + lineSpacing
 
         if i >= len(MOVES_LOG):
-            MOVES_LOG.append(moveTexts[i].getChessNotation())
+            MOVES_LOG.append(moveTexts[i].get_chess_notation())
 
     if len(moveTexts) > visible_lines:
         SCROLL_OFFSET += SCROLL_SPEED
@@ -358,7 +358,7 @@ def drawMoveLog(screen, gs, font):
             SCROLL_OFFSET = 0
 
 
-def animateMove(move, screen, board, clock):
+def animate_move(move, screen, board, clock):
     """
     Animate a chess move on the chessboard.
 
@@ -377,8 +377,8 @@ def animateMove(move, screen, board, clock):
     frameCount = (abs(dR) + abs(dC)) * FRAMES_PER_SQUARE
     for frame in range(frameCount + 1):
         r, c = (move.startRow + dR * frame / frameCount, move.startCol + dC * frame / frameCount)
-        drawBoard(screen)
-        drawPieces(screen, board)
+        draw_board(screen)
+        draw_pieces(screen, board)
         color = COLORS[(move.endRow + move.endCol) % 2]
         endSquare = p.Rect(move.endCol * SQ_SIZE, move.endRow * SQ_SIZE, SQ_SIZE, SQ_SIZE)
         p.draw.rect(screen, color, endSquare)
@@ -389,7 +389,7 @@ def animateMove(move, screen, board, clock):
         clock.tick(60)
 
 
-def drawText(screen, text, font_size=60, font_color='Black', shadow_color='White'):
+def draw_text(screen, text, font_size=60, font_color='Black', shadow_color='White'):
     """
     Draw enhanced text on the screen.
 
@@ -428,7 +428,8 @@ def save_moves_to_json(moves_log):
     Args:
     - moves_log: List of chess moves.
 
-    This function converts the moves log to a JSON format, including timestamps, and saves it to a file named 'moves_log.json'.
+    This function converts the moves log to a JSON format, including timestamps, and saves it to a file named
+    'moves_log.json'.
     """
     # add the white and black names to the moves log, knowing that white always starts
     player_moves = []
@@ -456,7 +457,8 @@ def main():
     """
     Run the main chess game loop.
 
-    This function initializes the chess game and runs the main game loop, handling player input and updating the game state accordingly.
+    This function initializes the chess game and runs the main game loop, handling player input and updating the game
+    state accordingly.
     """
 
     global SKIN, THEME, COLORS, MOVES_LOG, ANIMATE, PRACTICE_MODE
@@ -471,8 +473,8 @@ def main():
     screen.fill(p.Color("white"))
     moveLogFont = p.font.SysFont("Arial", 25, False, False)
     gs = ChessEngine.GameState()
-    loadImages()
-    validMoves = gs.getValidMoves()
+    load_images()
+    validMoves = gs.get_valid_moves()
     moveMade = False
     running = True
     sqSelected = ()
@@ -500,9 +502,9 @@ def main():
                         for i in range(len(validMoves)):
                             if move == validMoves[i]:
                                 if validMoves[i].isPawnPromotion:
-                                    piece = askPawnPromotion()
+                                    piece = ask_pawn_promotion()
                                     gs.promotionChoice = piece
-                                gs.makeMove(validMoves[i])
+                                gs.make_move(validMoves[i])
                                 moveMade = True
                                 ANIMATE = True
                                 sqSelected = ()
@@ -512,7 +514,7 @@ def main():
 
             elif (e.type == p.KEYDOWN and PRACTICE_MODE) or (e.type == p.KEYDOWN and gameOver):
                 if e.key == p.K_z:
-                    gs.undoMove()
+                    gs.undo_move()
                     if len(MOVES_LOG) > 0:
                         MOVES_LOG.pop()
                     moveMade = True
@@ -520,7 +522,7 @@ def main():
                     gameOver = False
                 if e.key == p.K_r:
                     gs = ChessEngine.GameState()
-                    validMoves = gs.getValidMoves()
+                    validMoves = gs.get_valid_moves()
                     sqSelected = ()
                     playerClicks = []
                     moveMade = False
@@ -532,22 +534,22 @@ def main():
 
         if moveMade:
             if ANIMATE:
-                animateMove(gs.moveLog[-1], screen, gs.board, clock)
-            validMoves = gs.getValidMoves()
+                animate_move(gs.moveLog[-1], screen, gs.board, clock)
+            validMoves = gs.get_valid_moves()
             moveMade = False
             ANIMATE = False
 
-        drawGameState(screen, gs, validMoves, sqSelected, moveLogFont)
+        draw_game_state(screen, gs, validMoves, sqSelected, moveLogFont)
 
         if gs.checkMate:
             gameOver = True
             if gs.whiteToMove:
-                drawText(screen, 'Black wins by checkmate', font_color='Black', shadow_color='Red')
+                draw_text(screen, 'Black wins by checkmate', font_color='Black', shadow_color='Red')
             else:
-                drawText(screen, 'White wins by checkmate', font_color='White', shadow_color='Green')
+                draw_text(screen, 'White wins by checkmate', font_color='White', shadow_color='Green')
         elif gs.staleMate:
             gameOver = True
-            drawText(screen, 'Stalemate')
+            draw_text(screen, 'Stalemate')
 
         clock.tick(MAX_FPS)
         p.display.flip()
@@ -556,6 +558,5 @@ def main():
 if __name__ == "__main__":
     main()
 
-    # if in game were made at least 2 moves, save the moves log to a json file
     if len(MOVES_LOG) >= 2:
         save_moves_to_json(MOVES_LOG)
