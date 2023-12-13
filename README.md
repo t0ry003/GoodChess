@@ -1,5 +1,5 @@
 <div align="center">
-    <img src="Documentation/icon-big.png" alt="Logo" width="250">
+    <img src="Documentation/icon-rm.png" alt="Logo">
 </div>
 
 <h1 align="center">
@@ -21,9 +21,9 @@
 </div>
 
 <div align="center">
-   <p>
-      Welcome to GoodChess! This is a powerful chess game implemented in Python, providing a user-friendly interface and a range of features for an enjoyable gaming experience.
-   </p>
+    <p>
+        Welcome to GoodChess, your go-to chess game for an immersive and feature-rich chess-playing experience. Whether you're a novice or a seasoned player, GoodChess offers a wide range of features to enhance your chess journey.
+    </p>
 </div>
 
 ## Overview
