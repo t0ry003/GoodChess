@@ -2,6 +2,7 @@
 
 <a href="#chessmain">ChessMain.py</a></br>
 <a href="#chessengine">ChessEngine.py</a>
+<a href="#credits">Credits</a>
 
 ## ChessMain
 
