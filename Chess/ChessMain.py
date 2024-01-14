@@ -38,13 +38,21 @@ COLORS = 0
 MOVES_LOG = []
 PROMOTION_PIECE = 'Queen'
 CLIENT_ID = '1187143441830912150'
+DRP = True
 RPC = Presence(CLIENT_ID)
-RPC.connect()
-RPC.update(
-    details="Playing Good Chess",
-    small_image="icon",
-    buttons=[{"label": "GitHub", "url": "https://github.com/t0ry003/GoodChess"}]
-)
+
+try:
+    RPC.connect()
+except Exception as ex:
+    print(f"Error connecting to Discord RPC: {ex}")
+    DRP = False
+
+if DRP:
+    RPC.update(
+        details="Playing Good Chess",
+        small_image="icon",
+        buttons=[{"label": "⭐ Github", "url": "https://github.com/t0ry003/GoodChess"}]
+    )
 
 
 def menu():
@@ -563,13 +571,14 @@ def main():
     while running:
         for e in p.event.get():
             if e.type != p.MOUSEMOTION:
-                RPC.update(
-                    details="Playing Good Chess",
-                    state=f"Moves: {len(MOVES_LOG)}",
-                    large_image="icon",
-                    small_image=f"{random.choices(['wb', 'wk', 'wn', 'wp', 'wq', 'wr'])[0]}",
-                    buttons=[{"label": "⭐ Github", "url": "https://github.com/t0ry003/GoodChess"}]
-                )
+                if DRP:
+                    RPC.update(
+                        details="Playing Good Chess",
+                        state=f"Moves: {len(MOVES_LOG)}",
+                        large_image="icon",
+                        small_image=f"{random.choices(['wb', 'wk', 'wn', 'wp', 'wq', 'wr'])[0]}",
+                        buttons=[{"label": "⭐ Github", "url": "https://github.com/t0ry003/GoodChess"}]
+                    )
 
             if e.type == p.QUIT:
                 running = False
@@ -656,4 +665,5 @@ if __name__ == "__main__":
     if len(MOVES_LOG) >= 2:
         save_moves_to_json(MOVES_LOG)
 
-    RPC.close()
+    if DRP:
+        RPC.close()
