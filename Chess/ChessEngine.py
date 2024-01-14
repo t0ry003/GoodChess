@@ -432,12 +432,12 @@ class GameState:
             return
         if (self.whiteToMove and self.currentCastlingRights.wks) or (
                 not self.whiteToMove and self.currentCastlingRights.bks):
-            self.get_kingside_castle_moves(r, c, moves)
+            self.get_king_side_castle_moves(r, c, moves)
         if (self.whiteToMove and self.currentCastlingRights.wqs) or (
                 not self.whiteToMove and self.currentCastlingRights.bqs):
             self.get_queen_side_castle_moves(r, c, moves)
 
-    def get_kingside_castle_moves(self, r, c, moves):
+    def get_king_side_castle_moves(self, r, c, moves):
         if self.board[r][c + 1] == '--' and self.board[r][c + 2] == '--':
             if not self.square_under_attack(r, c + 1) and not self.square_under_attack(r, c + 2):
                 moves.append(Move((r, c), (r, c + 2), self.board, isCastleMove=True))
@@ -526,9 +526,9 @@ class Move:
         This method returns the SAN notation for the move, e.g., "Nf3" for a knight move to f3.
         """
 
-        return self.getRankFile(self.startRow, self.startCol) + self.getRankFile(self.endRow, self.endCol)
+        return self.get_rank_file(self.startRow, self.startCol) + self.get_rank_file(self.endRow, self.endCol)
 
-    def getRankFile(self, r, c):
+    def get_rank_file(self, r, c):
         """
         Convert row and column indices to chess notation.
 

@@ -5,13 +5,17 @@ Main Script
 # Imports
 import json
 import os
+import random
 import sys
-import pygame as p
 import tkinter as t
-from tkinter import ttk
 import webbrowser
-from tkmessagebox import *
+from tkinter import ttk
+
 import ntkutils
+import pygame as p
+from pypresence import Presence
+from tkmessagebox import *
+
 import ChessEngine
 
 # Constants
@@ -33,6 +37,14 @@ THEME = 'Default'
 COLORS = 0
 MOVES_LOG = []
 PROMOTION_PIECE = 'Queen'
+CLIENT_ID = '1187143441830912150'
+RPC = Presence(CLIENT_ID)
+RPC.connect()
+RPC.update(
+    details="Playing Good Chess",
+    small_image="icon",
+    buttons=[{"label": "GitHub", "url": "https://github.com/t0ry003/GoodChess"}]
+)
 
 
 def menu():
@@ -76,6 +88,8 @@ def menu():
 
         FRAMES_PER_SQUARE = int(anim_combo.get()[0])
         PRACTICE_MODE = var_practice_mode.get()
+
+        save_settings_to_cfg()
 
         shutdown_ttk_repeat()
 
@@ -125,7 +139,7 @@ def menu():
     root = t.Tk()
     ntkutils.dark_title_bar(root)
 
-    root.title("Good Chess | Settings")
+    root.title("Good Chess")
     root.iconbitmap("images/game/icon.ico")
 
     window_width = 350
@@ -152,7 +166,9 @@ def menu():
     anim_combo = ttk.Combobox(root, width=4, values=["1 (FAST)", "2", "3", "4", "5", "6", "7", "8", "9 (SLOW)"])
     anim_combo.set(FRAMES_PER_SQUARE)
 
-    var_practice_mode = t.IntVar()
+    var_practice_mode = t.IntVar(value=0)
+    if PRACTICE_MODE == '1':
+        var_practice_mode = t.IntVar(value=1)
     practice_mode_checkbox = ttk.Checkbutton(root, text="Practice Mode", variable=var_practice_mode)
 
     logo_label = ttk.Label(root, image=main_logo)
@@ -187,6 +203,12 @@ def ask_pawn_promotion():
     This function uses a Tkinter window to prompt the player for a piece to promote the pawn to.
     """
 
+    def on_closing():
+        global PROMOTION_PIECE
+        PROMOTION_PIECE = 'Queen'
+        popup.destroy()
+        popup.quit()
+
     def apply_selection():
         global PROMOTION_PIECE
         PROMOTION_PIECE = promotion_combo.get()
@@ -200,7 +222,7 @@ def ask_pawn_promotion():
     popup.tk.call('source', './images/THEME/sun-valley.tcl')
     popup.tk.call('set_theme', 'dark')
 
-    popup.title("Good Chess | Pawn Promotion")
+    popup.title("Pawn Promotion")
     popup.iconbitmap("images/GAME/icon.ico")
 
     window_width = 350
@@ -221,6 +243,7 @@ def ask_pawn_promotion():
     promotion_combo.pack(pady=10)
     apply_button.pack(pady=20)
 
+    popup.protocol("WM_DELETE_WINDOW", on_closing)
     popup.mainloop()
     return PROMOTION_PIECE[0]
 
@@ -255,9 +278,15 @@ def highlight_squares(screen, gs, validMoves, sqSelected):
         r, c = sqSelected
         if gs.board[r][c][0] == ('w' if gs.whiteToMove else 'b'):
             s = p.Surface((SQ_SIZE, SQ_SIZE))
-            s.set_alpha(100)
-            s.fill(p.Color('blue'))
-            screen.blit(s, (SQ_SIZE * c, SQ_SIZE * r))
+            s.set_alpha(130)
+
+            if gs.in_check():
+                s.fill(p.Color('red'))
+                screen.blit(s, (SQ_SIZE * c, SQ_SIZE * r))
+            else:
+                s.fill(p.Color('blue'))
+                screen.blit(s, (SQ_SIZE * c, SQ_SIZE * r))
+
             s.fill(p.Color('yellow'))
             for move in validMoves:
                 if move.startRow == r and move.startCol == c:
@@ -403,21 +432,17 @@ def draw_text(screen, text, font_size=60, font_color='Black', shadow_color='Whit
 
     font = p.font.SysFont("Arial", font_size, True, False)
 
-    # Render the main text
     textObject = font.render(text, True, p.Color(shadow_color))
     textLocation = p.Rect(0, 0, BOARD_WIDTH, BOARD_HEIGHT).move(
         BOARD_WIDTH / 2 - textObject.get_width() / 2,
         BOARD_HEIGHT / 2 - textObject.get_height() / 2
     )
 
-    # Draw the main text
     screen.blit(textObject, textLocation)
 
-    # Render the text shadow
     textObject = font.render(text, True, p.Color(font_color))
     shadow_location = textLocation.move(2, 2)
 
-    # Draw the text shadow
     screen.blit(textObject, shadow_location)
 
 
@@ -431,7 +456,6 @@ def save_moves_to_json(moves_log):
     This function converts the moves log to a JSON format, including timestamps, and saves it to a file named
     'moves_log.json'.
     """
-    # add the white and black names to the moves log, knowing that white always starts
     player_moves = []
     white_name = "White"
     black_name = "Black"
@@ -453,6 +477,61 @@ def save_moves_to_json(moves_log):
         json.dump(player_moves, json_file)
 
 
+def save_settings_to_cfg():
+    """
+    Save the current settings to a config file.
+
+    This function saves the current settings to a config file named 'settings.cfg'.
+    """
+
+    global SKIN, THEME, FRAMES_PER_SQUARE, PRACTICE_MODE
+    with open('settings.cfg', 'w') as file:
+        file.write(f"SKIN={SKIN}\n")
+        file.write(f"THEME={THEME}\n")
+        file.write(f"FRAMES_PER_SQUARE={FRAMES_PER_SQUARE}\n")
+        file.write(f"PRACTICE_MODE={PRACTICE_MODE}\n")
+
+
+def load_settings_from_cfg():
+    """
+    Load the current settings from a config file.
+
+    This function loads the current settings from a config file named 'settings.cfg'.
+    """
+
+    global SKIN, THEME, FRAMES_PER_SQUARE, PRACTICE_MODE
+    try:
+        with open('settings.cfg', 'r') as file:
+            lines = file.readlines()
+            SKIN = lines[0].split('=')[1].strip()
+            THEME = lines[1].split('=')[1].strip()
+            FRAMES_PER_SQUARE = lines[2].split('=')[1].strip()
+            PRACTICE_MODE = lines[3].split('=')[1].strip()
+    except FileNotFoundError:
+        print("Settings file not found. Using default settings.")
+        set_default_settings()
+    except IndexError:
+        print("Error loading settings file. Using default settings.")
+        set_default_settings()
+    except Exception as e:
+        print(f"Error loading settings file: {e}")
+        set_default_settings()
+
+
+def set_default_settings():
+    """
+    Set the default settings.
+
+    This function sets the default settings.
+    """
+
+    global SKIN, THEME, FRAMES_PER_SQUARE, PRACTICE_MODE
+    SKIN = 'Default'
+    THEME = 'Default'
+    FRAMES_PER_SQUARE = 9
+    PRACTICE_MODE = False
+
+
 def main():
     """
     Run the main chess game loop.
@@ -461,7 +540,7 @@ def main():
     state accordingly.
     """
 
-    global SKIN, THEME, COLORS, MOVES_LOG, ANIMATE, PRACTICE_MODE
+    global SKIN, THEME, COLORS, MOVES_LOG, ANIMATE, PRACTICE_MODE, RPC
     menu()
     if COLORS == 0:
         sys.exit("Game did not start. Please choose a skin and theme and press START.")
@@ -483,6 +562,15 @@ def main():
 
     while running:
         for e in p.event.get():
+            if e.type != p.MOUSEMOTION:
+                RPC.update(
+                    details="Playing Good Chess",
+                    state=f"Moves: {len(MOVES_LOG)}",
+                    large_image="icon",
+                    small_image=f"{random.choices(['wb', 'wk', 'wn', 'wp', 'wq', 'wr'])[0]}",
+                    buttons=[{"label": "⭐ Github", "url": "https://github.com/t0ry003/GoodChess"}]
+                )
+
             if e.type == p.QUIT:
                 running = False
 
@@ -528,6 +616,11 @@ def main():
                     moveMade = False
                     ANIMATE = False
                     gameOver = False
+                if e.key == p.K_ESCAPE:
+                    PRACTICE_MODE = False
+
+            elif e.type == p.KEYDOWN and e.key == p.K_ESCAPE:
+                PRACTICE_MODE = True
 
             elif e.type == p.KEYDOWN:
                 pass
@@ -556,7 +649,11 @@ def main():
 
 
 if __name__ == "__main__":
+    load_settings_from_cfg()
+
     main()
 
     if len(MOVES_LOG) >= 2:
         save_moves_to_json(MOVES_LOG)
+
+    RPC.close()
