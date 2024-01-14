@@ -55,7 +55,10 @@ and strategic gameplay experience.
 ### From Source:
 
 1. Ensure you have Python installed on your machine;
-2. Clone this repository and navigate to the Chess directory;
+2. Clone this repository and navigate to the Chess directory:
+    ```bash
+    git clone https://github.com/t0ry003/GoodChess.git
+    ```
 3. Install the required libraries by running the following command in the terminal:
    ```bash
    pip install -r requirements.txt
