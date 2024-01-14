@@ -1,7 +1,8 @@
 # Good Chess Documentation
 
 <a href="#chessmain">ChessMain.py</a></br>
-<a href="#chessengine">ChessEngine.py</a>
+<a href="#chessengine">ChessEngine.py</a></br>
+<a href="#credits">Credits</a>
 
 ## ChessMain
 
