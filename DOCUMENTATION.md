@@ -16,6 +16,7 @@
 - `webbrowser`: Module for displaying Web-based documents to users.
 - `tkmessagebox`: Module for creating standard Tkinter dialogs.
 - `ntkutils`: Custom utilities related to Tkinter.
+- `pypresence`: Discord Rich Presence library.
 - `ChessEngine`: Module containing the chess game logic.
 
 ### Constants
@@ -36,6 +37,8 @@
 - `COLORS`: Color scheme based on the chosen theme.
 - `MOVES_LOG`: List to store chess moves.
 - `PROMOTION_PIECE`: Default pawn promotion piece.
+- `CLIENT_ID`: Discord client ID for Rich Presence.
+- `RPC`: Discord Rich Presence client.
 
 ### Function: `menu()`
 
@@ -82,6 +85,14 @@ Draw enhanced text on the screen.
 
 Save the moves log to a JSON file with timestamps. Converts the moves log to JSON format, including timestamps, and
 saves it to a file named 'moves_log.json'.
+
+### Function: `save_settings_to_cfg()`
+
+Save the current skin and theme to a configuration file. Saves the current skin and theme to a configuration file
+
+### Function: `load_settings_from_cfg()`
+
+Load the skin and theme from a configuration file. Loads the skin and theme from a configuration file.
 
 ### Function: `main()`
 
@@ -230,3 +241,8 @@ Get the standard algebraic notation (SAN) for the move.
 #### `getRankFile(self, r, c)`
 
 Convert row and column indices to chess notation.
+
+
+## Credits
+
+- Chess pieces: https://commons.wikimedia.org/wiki/Category:SVG_chess_pieces
